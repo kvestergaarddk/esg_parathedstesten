@@ -65,12 +65,23 @@
 
     /* ===== VIEWS ===== */
     .view { display: none; }
-    .view.active { display: block; animation: fadeUp 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+    .view.active { display: block; }
 
     @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(16px); }
+      from { opacity: 0; transform: translateY(20px); }
       to   { opacity: 1; transform: translateY(0); }
     }
+
+    /* Staggered hero text animations */
+    .anim {
+      opacity: 0;
+      animation: fadeUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+    .anim-1 { animation-delay: 0.05s; }
+    .anim-2 { animation-delay: 0.18s; }
+    .anim-3 { animation-delay: 0.32s; }
+    .anim-4 { animation-delay: 0.46s; }
+    .anim-5 { animation-delay: 0.60s; }
 
     /* ===== PROGRESS BAR ===== */
     .prog-track {
@@ -306,19 +317,19 @@
   <section class="hero-section" style="background:var(--bg); min-height:calc(100vh - 120px); padding:0 0 0 74px; display:grid; grid-template-columns:1fr 1fr; align-items:stretch; overflow:hidden;">
     <!-- Left: text -->
     <div class="hero-text" style="display:flex; flex-direction:column; justify-content:center; gap:clamp(48px,6vw,96px); padding:128px 64px 128px 0;">
-      <h1 style="font-family:'CZ Sans',sans-serif; font-size:clamp(48px,6vw,96px); font-weight:700; color:var(--text); line-height:1.0; letter-spacing:-0.03em;">Er din virksomhed klar til ESG?</h1>
+      <h1 class="anim anim-1" style="font-family:'CZ Sans',sans-serif; font-size:clamp(48px,6vw,96px); font-weight:700; color:var(--text); line-height:1.0; letter-spacing:-0.03em;">Er din virksomhed klar til ESG?</h1>
       <div style="display:flex; flex-direction:column; gap:clamp(20px,2vw,36px); max-width:560px;">
-        <p style="font-family:'CZ Sans',sans-serif; font-size:clamp(16px,1.6vw,26px); font-weight:400; line-height:1.55; color:rgba(255,255,255,0.75);">ESG fylder mere og mere i krav fra kunder, investorer og myndigheder. Men hvor klar er din virksomhed egentlig til at arbejde struktureret med ESG?</p>
-        <p style="font-family:'CZ Sans',sans-serif; font-size:clamp(16px,1.6vw,26px); font-weight:400; line-height:1.55; color:rgba(255,255,255,0.75);">Tag vores korte ESG test og få et hurtigt overblik over jeres nuværende niveau. På få minutter får du en indikation af, hvor stærkt jeres fundament er, og hvor der er potentiale for forbedring.</p>
-        <button onclick="startQuiz()" style="background:none; border:none; cursor:pointer; display:inline-flex; align-items:center; gap:16px; color:var(--text); font-family:'CZ Sans',sans-serif; font-size:clamp(17px,1.8vw,28px); font-weight:400; padding:0; margin-top:8px; transition:opacity 0.15s ease;" onmouseover="this.style.opacity='0.65'" onmouseout="this.style.opacity='1'">
+        <p class="anim anim-2" style="font-family:'CZ Sans',sans-serif; font-size:clamp(16px,1.6vw,26px); font-weight:400; line-height:1.55; color:rgba(255,255,255,0.75);">ESG fylder mere og mere i krav fra kunder, investorer og myndigheder. Men hvor klar er din virksomhed egentlig til at arbejde struktureret med ESG?</p>
+        <p class="anim anim-3" style="font-family:'CZ Sans',sans-serif; font-size:clamp(16px,1.6vw,26px); font-weight:400; line-height:1.55; color:rgba(255,255,255,0.75);">Tag vores korte ESG test og få et hurtigt overblik over jeres nuværende niveau. På få minutter får du en indikation af, hvor stærkt jeres fundament er, og hvor der er potentiale for forbedring.</p>
+        <button onclick="startQuiz()" class="anim anim-4" style="background:none; border:none; cursor:pointer; display:inline-flex; align-items:center; gap:16px; color:var(--text); font-family:'CZ Sans',sans-serif; font-size:clamp(17px,1.8vw,28px); font-weight:400; padding:0; margin-top:8px; transition:opacity 0.15s ease;" onmouseover="this.style.opacity='0.65'" onmouseout="this.style.opacity='1'">
           <svg width="36" height="14" viewBox="0 0 36 14" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;"><path d="M0 7H34M28 1l6 6-6 6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
           Tag testen
         </button>
       </div>
     </div>
-    <!-- Right: image -->
-    <div class="hero-img" style="display:flex; align-items:center; justify-content:center;">
-      <img src="Brand_assets/ESG.png" alt="" style="width:100%; height:100%; object-fit:cover; display:block;">
+    <!-- Right: particle canvas -->
+    <div class="hero-img anim anim-2" style="position:relative; overflow:hidden;">
+      <canvas id="particle-canvas" style="display:block; width:100%; height:100%;"></canvas>
     </div>
   </section>
 
@@ -935,6 +946,164 @@ function renderResults() {
     }, 100);
   });
 }
+</script>
+
+<script>
+// ===== PARTICLE SYSTEM — ImageData renderer (fast) =====
+(function () {
+  const CFG = {
+    speed:       1,
+    scatter:     0.1,
+    size:        2,
+    depth:       0.3,
+    touchRadius: 40,
+    velDamping:  0.92,
+    threshold:   0.1,
+    highlights:  1,
+    brightness:  1,
+    contrast:    1,
+  };
+
+  const STEP = 4; // sample every Npx
+
+  const canvas = document.getElementById('particle-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+
+  let particles = [], W = 0, H = 0;
+  let imgData, buf32;
+  let mouse = { x: -9999, y: -9999 };
+  let rafId, t0 = null;
+
+  function resize() {
+    const par = canvas.parentElement;
+    W = canvas.width  = par.clientWidth  || par.offsetWidth  || 720;
+    H = canvas.height = par.clientHeight || par.offsetHeight || 900;
+    imgData = ctx.createImageData(W, H);
+    buf32   = new Uint32Array(imgData.data.buffer);
+  }
+
+  function build(img) {
+    resize();
+    particles = [];
+
+    const off  = Object.assign(document.createElement('canvas'), { width: W, height: H });
+    const octx = off.getContext('2d');
+    const scale = Math.max(W / img.naturalWidth, H / img.naturalHeight);
+    octx.drawImage(img,
+      (W - img.naturalWidth  * scale) / 2,
+      (H - img.naturalHeight * scale) / 2,
+      img.naturalWidth * scale, img.naturalHeight * scale);
+
+    const data = octx.getImageData(0, 0, W, H).data;
+
+    for (let py = 0; py < H; py += STEP) {
+      for (let px = 0; px < W; px += STEP) {
+        const i = (py * W + px) * 4;
+        const alpha = data[i + 3] / 255;
+        if (alpha < CFG.threshold) continue;
+
+        let lum = (data[i] * 0.299 + data[i+1] * 0.587 + data[i+2] * 0.114) / 255;
+        lum = Math.max(0, Math.min(1, (lum - 0.5) * CFG.contrast + 0.5 + (CFG.brightness - 1)));
+
+        const r0 = Math.random(), r1 = Math.random(), r2 = Math.random(), r3 = Math.random();
+
+        // Pre-compute 32-bit RGBA colour (little-endian: ABGR in memory = RGBA in Uint32)
+        const c  = Math.round(lum * CFG.highlights * 255);
+        const a  = Math.round(alpha * 0.92 * 255);
+        const col = (a << 24) | (c << 16) | (c << 8) | c;  // little-endian ABGR
+
+        // Per-particle phases for sin-based depth/size wiggles (replaces per-frame snoise)
+        const depthPh = r3 * Math.PI * 2;
+        const sizePh  = r2 * Math.PI * 2;
+
+        particles.push({
+          ox: px, oy: py, x: px, y: py, vx: 0, vy: 0,
+          pull: r0 * 0.004 + 0.002,
+          push: (r1 * 0.01 + 0.01) * 0.5,
+          scatterX: r2 - 0.5,
+          scatterY: Math.sin(px * 0.01 * 127.1 + r2 * 311.7) * 0.5,
+          depthPh, sizePh, r3,
+          col,
+        });
+      }
+    }
+  }
+
+  function tick(ts) {
+    if (!t0) t0 = ts;
+    const t   = (ts - t0) * 0.001 * CFG.speed;
+    const tr  = CFG.touchRadius * 2;
+    const tr2 = tr * tr;
+
+    // Clear pixel buffer
+    buf32.fill(0);
+
+    for (const p of particles) {
+      // Velocity shader
+      p.vx += (p.ox - p.x) * p.pull;
+      p.vy += (p.oy - p.y) * p.pull;
+      const dx = p.x - mouse.x, dy = p.y - mouse.y;
+      const d2 = dx * dx + dy * dy;
+      if (d2 < tr2) {
+        const d = Math.sqrt(d2) || 1;
+        const f = (tr - d) * p.push;
+        p.vx += (dx / d) * f;
+        p.vy += (dy / d) * f;
+      }
+      p.vx *= CFG.velDamping;
+      p.vy *= CFG.velDamping;
+
+      // Position shader
+      p.x += p.vx + p.scatterX * CFG.scatter;
+      p.y += p.vy + p.scatterY * CFG.scatter;
+
+      // Size: base + depth wiggle + size wiggle (sin-based, cheap)
+      const depthMod = Math.sin(t * 0.6 + p.depthPh) * p.r3 * CFG.depth;
+      const sizeMod  = (Math.sin(t * 0.5 + p.sizePh) + 1.0) * 0.5; // 0–1
+      let sz = Math.max(1, Math.round(CFG.size * (1 + depthMod) * (0.5 + sizeMod * 0.5)));
+
+      // Write sz×sz pixel block directly into buffer
+      const ix = Math.round(p.x), iy = Math.round(p.y);
+      const x0 = Math.max(0, ix), x1 = Math.min(W - 1, ix + sz - 1);
+      const y0 = Math.max(0, iy), y1 = Math.min(H - 1, iy + sz - 1);
+      for (let row = y0; row <= y1; row++) {
+        const base = row * W;
+        for (let col = x0; col <= x1; col++) {
+          buf32[base + col] = p.col;
+        }
+      }
+    }
+
+    ctx.putImageData(imgData, 0, 0);
+    rafId = requestAnimationFrame(tick);
+  }
+
+  function toCanvas(cx, cy) {
+    const r = canvas.getBoundingClientRect();
+    return { x: (cx - r.left) * (W / r.width), y: (cy - r.top) * (H / r.height) };
+  }
+
+  canvas.addEventListener('mousemove',  e => { const p = toCanvas(e.clientX, e.clientY); mouse.x = p.x; mouse.y = p.y; });
+  canvas.addEventListener('mouseleave', () => { mouse.x = mouse.y = -9999; });
+  canvas.addEventListener('touchmove',  e => { e.preventDefault(); const t = e.touches[0]; const p = toCanvas(t.clientX, t.clientY); mouse.x = p.x; mouse.y = p.y; }, { passive: false });
+  canvas.addEventListener('touchend',   () => { mouse.x = mouse.y = -9999; });
+
+  let resizeTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      cancelAnimationFrame(rafId);
+      t0 = null;
+      build(img);
+      rafId = requestAnimationFrame(tick);
+    }, 180);
+  });
+
+  const img = new Image();
+  img.onload = () => { build(img); rafId = requestAnimationFrame(tick); };
+  img.src = 'Brand_assets/ESG.png';
+})();
 </script>
 
 </body>
