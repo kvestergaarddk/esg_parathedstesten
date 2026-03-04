@@ -964,14 +964,13 @@ function renderResults() {
     contrast:    1,
   };
 
-  const STEP = 4; // sample every Npx
-
   const canvas = document.getElementById('particle-canvas');
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
 
   let particles = [], W = 0, H = 0;
   let imgData, buf32;
+  let STEP, sizeBase, depthScale;
   let mouse = { x: -9999, y: -9999 };
   let rafId, t0 = null;
 
@@ -979,6 +978,9 @@ function renderResults() {
     const par = canvas.parentElement;
     W = canvas.width  = par.clientWidth  || par.offsetWidth  || 720;
     H = canvas.height = par.clientHeight || par.offsetHeight || 900;
+    // Responsive particle settings: fine on mobile, varied on desktop
+    if (W < 520) { STEP = 2; sizeBase = 1.2; depthScale = 2; }
+    else          { STEP = 4; sizeBase = 2;   depthScale = 5; }
     imgData = ctx.createImageData(W, H);
     buf32   = new Uint32Array(imgData.data.buffer);
   }
@@ -1058,11 +1060,10 @@ function renderResults() {
       p.x += p.vx + p.scatterX * CFG.scatter;
       p.y += p.vy + p.scatterY * CFG.scatter;
 
-      // Size: (snoise(t,rindex)+1) * sizeWiggle * size  →  0–4px range
-      // Plus per-particle depth bias (r3²) for large "highlight" particles
+      // Size: responsive — fine on mobile, varied on desktop
       const sizeWiggle = (Math.sin(t * 0.5 + p.sizePh) + 1.0); // 0–2
-      const depthBias  = p.r3 * p.r3 * CFG.depth * 5;           // 0–1.5, skewed large
-      let sz = Math.max(1, Math.round(sizeWiggle * CFG.size + depthBias));
+      const depthBias  = p.r3 * p.r3 * CFG.depth * depthScale;
+      let sz = Math.max(1, Math.round(sizeWiggle * sizeBase + depthBias));
 
       // Write sz×sz pixel block directly into buffer
       const ix = Math.round(p.x), iy = Math.round(p.y);
