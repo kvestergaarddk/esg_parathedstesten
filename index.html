@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ESG Parathedstesten — Creative ZOO</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @font-face { font-family: 'CZ Sans'; src: url('Brand_assets/Fonts/Creatice Zoo Sans/CreativeZooSans-Light.woff2') format('woff2'); font-weight: 300; font-style: normal; font-display: swap; }
+    @font-face { font-family: 'CZ Sans'; src: url('Brand_assets/Fonts/Creatice Zoo Sans/CreativeZooSans-Regular.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
+    @font-face { font-family: 'CZ Sans'; src: url('Brand_assets/Fonts/Creatice Zoo Sans/CreativeZooSans-Bold.woff2') format('woff2'); font-weight: 700; font-style: normal; font-display: swap; }
+    @font-face { font-family: 'CZ Sans'; src: url('Brand_assets/Fonts/Creatice Zoo Sans/CreativeZooSans-RegularOblique.woff2') format('woff2'); font-weight: 400; font-style: italic; font-display: swap; }
+    @font-face { font-family: 'CZ Slab'; src: url('Brand_assets/Fonts/Creative Zoo Slab/CreativeZooSlab-Light.woff2') format('woff2'); font-weight: 300; font-style: normal; font-display: swap; }
+    @font-face { font-family: 'CZ Slab'; src: url('Brand_assets/Fonts/Creative Zoo Slab/CreativeZooSlab-Regular.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
+    @font-face { font-family: 'CZ Slab'; src: url('Brand_assets/Fonts/Creative Zoo Slab/CreativeZooSlab-Bold.woff2') format('woff2'); font-weight: 700; font-style: normal; font-display: swap; }
+    @font-face { font-family: 'CZ Slab'; src: url('Brand_assets/Fonts/Creative Zoo Slab/CreativeZooSlab-Regularoblique.woff2') format('woff2'); font-weight: 400; font-style: italic; font-display: swap; }
+  </style>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:         #1B1B1C;
+      --surface:    #232324;
+      --elevated:   #2B2B2C;
+      --border:     #363637;
+      --green:      #56C183;
+      --green-glow: rgba(86,193,131,0.12);
+      --text:       #FFFFFF;
+      --muted:      #888889;
+      --orange:     #E8895A;
+      --yellow:     #D9B75A;
+      --blue-cz:    #314AE2;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'CZ Sans', system-ui, sans-serif;
+      font-size: 16px;
+      line-height: 1.65;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Grain overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      background-size: 180px 180px;
+      opacity: 0.045;
+      pointer-events: none;
+      z-index: 9998;
+    }
+
+    h1, h2, h3, h4 {
+      font-family: 'CZ Slab', Georgia, serif;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      font-weight: 400;
+    }
+
+    /* ===== VIEWS ===== */
+    .view { display: none; }
+    .view.active { display: block; animation: fadeUp 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ===== PROGRESS BAR ===== */
+    .prog-track {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: rgba(255,255,255,0.1);
+      z-index: 100;
+    }
+    .prog-fill {
+      height: 100%;
+      background: rgba(255,255,255,0.8);
+      transition: width 0.5s cubic-bezier(0.34, 1.4, 0.64, 1);
+    }
+
+    /* ===== OPTION CARDS ===== */
+    .opt {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      padding: 20px 0;
+      border: none;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      background: transparent;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.15s ease, padding-left 0.15s ease;
+      border-radius: 0;
+    }
+    .opt:last-child { border-bottom: 1px solid rgba(255,255,255,0.1); }
+    .opt:hover { background: rgba(255,255,255,0.04); padding-left: 12px; }
+    .opt.sel { background: #fff; padding-left: 20px; padding-right: 20px; }
+    .opt:active { opacity: 0.85; }
+    .opt:focus-visible { outline: 1px solid rgba(255,255,255,0.4); outline-offset: 0; }
+
+    .opt-num {
+      font-family: 'CZ Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 400;
+      flex-shrink: 0;
+      color: rgba(255,255,255,0.3);
+      width: 24px;
+      transition: color 0.15s;
+    }
+    .opt.sel .opt-num { color: rgba(0,0,0,0.35); }
+    .opt-label { font-family: 'CZ Sans', sans-serif; font-size: 16px; color: rgba(255,255,255,0.55); transition: color 0.15s; }
+    .opt:hover .opt-label { color: rgba(255,255,255,0.85); }
+    .opt.sel .opt-label { color: #1B1B1C; font-weight: 500; }
+
+    /* ===== BUTTONS ===== */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 28px;
+      background: #313f93;
+      color: #ffffff;
+      border: none;
+      font-family: 'CZ Sans', sans-serif;
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.18s ease, transform 0.12s ease, box-shadow 0.18s ease;
+      box-shadow: 0 2px 16px rgba(49,63,147,0.4), 0 1px 3px rgba(0,0,0,0.5);
+      text-decoration: none;
+    }
+    .btn:hover  { background: #3d4fb8; box-shadow: 0 4px 24px rgba(49,63,147,0.5), 0 1px 4px rgba(0,0,0,0.5); }
+    .btn:active { transform: scale(0.98); }
+    .btn:focus-visible { outline: 2px solid #313f93; outline-offset: 3px; }
+    .btn:disabled { opacity: 0.25; cursor: not-allowed; transform: none; box-shadow: none; background: var(--elevated); color: var(--muted); }
+
+    .btn-outline {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-family: 'CZ Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 400;
+      cursor: pointer;
+      transition: border-color 0.18s, background 0.18s, transform 0.12s;
+      text-decoration: none;
+    }
+    .btn-outline:hover  { border-color: rgba(239,238,234,0.3); background: var(--surface); }
+    .btn-outline:active { transform: scale(0.98); }
+    .btn-outline:focus-visible { outline: 2px solid #313f93; outline-offset: 3px; }
+
+    /* ===== FORM ===== */
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .label {
+      font-family: 'CZ Sans', sans-serif;
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 400;
+    }
+    .input {
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid rgba(255,255,255,0.25);
+      border-radius: 0;
+      padding: 10px 0;
+      color: var(--text);
+      font-family: 'CZ Sans', sans-serif;
+      font-size: 16px;
+      outline: none;
+      transition: border-color 0.18s;
+      width: 100%;
+    }
+    .input:focus { border-bottom-color: rgba(255,255,255,0.75); }
+    .input::placeholder { color: var(--muted); opacity: 0.45; }
+
+    /* ===== DIM BAR ===== */
+    .bar-track { height: 3px; background: var(--border); overflow: hidden; }
+    .bar-fill  { height: 100%; transition: width 1.1s cubic-bezier(0.34, 1.2, 0.64, 1); }
+
+    /* ===== DIM CARDS (landing) ===== */
+    .dim-card {
+      padding: 24px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--surface);
+    }
+
+    /* ===== QUIZ NEXT BUTTON DISABLED ===== */
+    #btn-next:disabled { opacity: 0.2; cursor: not-allowed; }
+    #btn-next:disabled:hover { opacity: 0.2; }
+
+    /* ===== SCORE BADGE ===== */
+    .level-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      font-size: 13px;
+      font-family: 'CZ Sans', sans-serif;
+      font-weight: 500;
+      letter-spacing: 0.03em;
+    }
+
+    /* ===== SEPARATORS ===== */
+    hr { border: none; border-top: 1px solid var(--border); }
+
+    /* ===== WRAPPER ===== */
+    .wrap  { max-width: 800px; margin: 0 auto; padding: 0 24px; }
+    .wrap-sm { max-width: 600px; margin: 0 auto; padding: 0 24px; }
+
+    /* ===== PRINT ===== */
+    @media print {
+      body::before { display: none; }
+      .no-print { display: none !important; }
+      #view-landing, #view-quiz, #view-lead { display: none !important; }
+      #view-results { display: block !important; background: white; color: black; }
+      .prog-track { display: none; }
+      .btn, .btn-outline { display: none !important; }
+      body { background: white; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ============================================================
+     LANDING VIEW
+     ============================================================ -->
+<div id="view-landing" class="view active">
+
+  <!-- HEADER -->
+  <header style="height:120px; padding:0 96px; display:flex; align-items:center; justify-content:space-between; background:var(--bg); position:sticky; top:0; z-index:50; border-bottom:1px solid rgba(255,255,255,0.06);">
+    <a href="#" aria-label="Creative ZOO" style="display:inline-flex; line-height:0; text-decoration:none;">
+      <svg width="120" height="48" viewBox="0 0 146 58" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M4.32377 28.5483C2.99075 27.7618 1.93117 26.6781 1.16212 25.3322C0.39307 23.9864 0 22.5007 0 20.9101C0 19.3195 0.39307 17.8339 1.16212 16.488C1.93117 15.1421 2.99075 14.0584 4.32377 13.2719C5.63971 12.4854 7.09236 12.0833 8.64755 12.0833C10.2198 12.0833 11.6725 12.4854 13.0055 13.2894C14.3214 14.0934 15.3639 15.1596 16.133 16.5055L14.8341 18.9525H12.9542C12.5953 18.0611 12.0314 17.3444 11.2452 16.8026C10.4762 16.2608 9.60459 15.9811 8.64755 15.9811C7.79305 15.9811 7.00691 16.2083 6.28913 16.6453C5.57135 17.0823 4.99028 17.694 4.56303 18.4456C4.13578 19.1972 3.9307 20.0187 3.9307 20.9101C3.9307 21.8015 4.13578 22.623 4.56303 23.3746C4.99028 24.1262 5.57135 24.738 6.28913 25.1749C7.00691 25.6119 7.81014 25.8391 8.64755 25.8391C9.60459 25.8391 10.4762 25.5595 11.2452 25.0176C12.0143 24.4758 12.5783 23.7591 12.9542 22.8677H14.817L16.1159 25.3148C15.3639 26.6606 14.3214 27.7268 12.9884 28.5308C11.6725 29.3349 10.2198 29.7369 8.63046 29.7369C7.09236 29.7369 5.63971 29.3349 4.32377 28.5483ZM33.992 27.2199V29.3698H30.7278L27.2928 24.7554H24.7122V29.3698H20.7815V12.4504H27.7884C28.8821 12.4504 29.8904 12.7301 30.8133 13.2719C31.7362 13.8137 32.4881 14.5653 33.035 15.5092C33.5819 16.453 33.8553 17.4843 33.8553 18.5854C33.8553 19.5992 33.6332 20.5605 33.1717 21.4345C32.7103 22.3259 32.0951 23.0425 31.3089 23.6193L33.992 27.2199ZM24.7293 20.8577H27.9251C28.472 20.8577 28.9505 20.6305 29.3606 20.176C29.7708 19.7216 29.9588 19.1972 29.9588 18.5854C29.9588 17.9737 29.7537 17.4493 29.3606 16.9949C28.9505 16.5579 28.4891 16.3307 27.9251 16.3307H24.7293V20.8577ZM42.0585 16.3307V18.935L46.5019 19.4244V22.3434L42.0585 22.8328V25.4721H49.749V29.3698H38.1449V12.4504H49.749V16.3482H42.0585V16.3307ZM68.1379 27.2199V29.3698H64.549L63.3014 26.0314L62.4469 26.4159H58.0548L57.2003 26.0314L55.9527 29.3698H52.3638V27.2199L57.9352 12.4504H62.5665L68.1379 27.2199ZM60.2423 17.9562L58.5162 22.5182H61.9684L60.2423 17.9562ZM81.8099 15.8588L77.2981 16.3482V29.3873H73.3674V16.3307L68.8557 15.8413V12.4504H81.8099V15.8588ZM89.2782 12.4504V29.3698H85.3475V12.4504H89.2782ZM108.248 12.4504V14.6352L102.694 29.3873H98.3872L92.7988 14.6178V12.4504H96.251L100.523 23.7417L104.779 12.4504H108.248ZM114.742 16.3307V18.935L119.186 19.4244V22.3434L114.742 22.8328V25.4721H122.433V29.3698H110.829V12.4504H122.433V16.3482H114.742V16.3307ZM105.702 37.4275L98.1651 46.5689L105.275 47.1807V50.4667H93.2944V46.5689L100.831 37.4275L93.7217 36.8158V33.5298H105.702V37.4275ZM133.08 37.8295C131.764 37.043 130.704 35.9768 129.918 34.6309C129.132 33.2851 128.756 31.8168 128.756 30.2438C128.756 28.6532 129.149 27.1675 129.918 25.8042C130.704 24.4408 131.747 23.3571 133.08 22.5706C134.396 21.7666 135.849 21.382 137.404 21.382C138.942 21.382 140.377 21.784 141.71 22.5706C143.026 23.3746 144.086 24.4408 144.855 25.8042C145.624 27.1675 146.017 28.6532 146.017 30.2438C146.017 31.8168 145.624 33.2851 144.855 34.6309C144.086 35.9768 143.026 37.043 141.71 37.8295C140.394 38.6161 138.959 39.0181 137.404 39.0181C135.849 39.0181 134.396 38.6161 133.08 37.8295ZM139.762 34.4561C140.48 34.0192 141.044 33.4249 141.471 32.6733C141.881 31.9392 142.103 31.1177 142.103 30.2263C142.103 29.3174 141.898 28.4959 141.471 27.7443C141.061 26.9927 140.48 26.381 139.762 25.9265C139.044 25.4721 138.258 25.2448 137.404 25.2448C136.549 25.2448 135.763 25.4721 135.045 25.909C134.328 26.346 133.746 26.9578 133.319 27.7093C132.892 28.4609 132.687 29.2824 132.687 30.1738C132.687 31.0653 132.892 31.8868 133.319 32.6383C133.746 33.3899 134.328 34.0017 135.045 34.4387C135.763 34.8756 136.566 35.1029 137.404 35.1029C138.241 35.1029 139.044 34.8931 139.762 34.4561ZM112.897 56.8115C111.581 56.0249 110.521 54.9587 109.735 53.6128C108.949 52.267 108.573 50.7988 108.573 49.2257C108.573 47.6351 108.966 46.1494 109.735 44.7861C110.521 43.4227 111.564 42.3391 112.897 41.5525C114.213 40.7485 115.665 40.364 117.22 40.364C118.759 40.364 120.194 40.766 121.527 41.5525C122.843 42.3565 123.903 43.4227 124.672 44.7861C125.441 46.1494 125.834 47.6351 125.834 49.2257C125.834 50.7988 125.441 52.267 124.672 53.6128C123.903 54.9587 122.843 56.0249 121.527 56.8115C120.211 57.598 118.776 58 117.22 58C115.665 58 114.23 57.598 112.897 56.8115ZM119.579 53.4381C120.297 53.0011 120.861 52.4068 121.288 51.6552C121.698 50.9211 121.92 50.0996 121.92 49.2082C121.92 48.2993 121.715 47.4778 121.288 46.7262C120.861 45.9746 120.297 45.3629 119.579 44.9084C118.861 44.454 118.075 44.2268 117.22 44.2268C116.366 44.2268 115.58 44.454 114.862 44.8909C114.144 45.3279 113.563 45.9397 113.136 46.6913C112.709 47.4428 112.504 48.2643 112.504 49.1558C112.504 50.0472 112.709 50.8687 113.136 51.6203C113.563 52.3719 114.144 52.9836 114.862 53.4206C115.58 53.8575 116.383 54.0848 117.22 54.0848C118.075 54.1023 118.861 53.875 119.579 53.4381Z" fill="white"/>
+      </svg>
+    </a>
+    <a href="mailto:ms@czoo.dk" style="font-family:'CZ Sans',sans-serif; font-size:22px; font-weight:400; color:var(--text); text-decoration:none; opacity:0.85; transition:opacity 0.15s ease;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.85'">Kontakt</a>
+  </header>
+
+  <!-- HERO SECTION -->
+  <section style="background:var(--bg); padding:128px 74px; display:flex; flex-direction:column; gap:clamp(56px,8vw,120px);">
+    <h1 style="font-family:'CZ Sans',sans-serif; font-size:clamp(48px,7vw,100px); font-weight:700; color:var(--text); line-height:1.0; letter-spacing:-0.03em; max-width:950px;">Er din virksomhed klar til ESG?</h1>
+    <div style="display:flex; flex-direction:column; gap:clamp(20px,2vw,40px); max-width:clamp(480px,55vw,760px);">
+      <p style="font-family:'CZ Sans',sans-serif; font-size:clamp(17px,2.0vw,32px); font-weight:400; line-height:1.45; color:var(--text);">ESG fylder mere og mere i krav fra kunder, investorer og myndigheder. Men hvor klar er din virksomhed egentlig til at arbejde struktureret med ESG?</p>
+      <p style="font-family:'CZ Sans',sans-serif; font-size:clamp(17px,2.0vw,32px); font-weight:400; line-height:1.45; color:var(--text);">Tag vores korte ESG test og få et hurtigt overblik over jeres nuværende niveau. På få minutter får du en indikation af, hvor stærkt jeres fundament er, og hvor der er potentiale for forbedring.</p>
+      <button onclick="startQuiz()" style="background:none; border:none; cursor:pointer; display:inline-flex; align-items:center; gap:16px; color:var(--text); font-family:'CZ Sans',sans-serif; font-size:clamp(17px,2.0vw,32px); font-weight:400; padding:0; margin-top:8px; transition:opacity 0.15s ease;" onmouseover="this.style.opacity='0.65'" onmouseout="this.style.opacity='1'">
+        <svg width="36" height="14" viewBox="0 0 36 14" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;"><path d="M0 7H34M28 1l6 6-6 6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Tag testen
+      </button>
+    </div>
+  </section>
+
+  <!-- DIMENSIONS SECTION -->
+  <section style="background:var(--bg); padding:120px 74px;">
+    <h2 style="font-family:'CZ Sans',sans-serif; font-size:clamp(28px,4.2vw,60px); font-weight:400; color:var(--text); line-height:1.1; letter-spacing:-0.02em; margin-bottom:clamp(40px,4.5vw,80px);">De fire områder vi vurderer</h2>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:clamp(36px,4.5vw,80px) clamp(48px,5vw,120px);">
+      <div style="border-left:1px solid rgba(255,255,255,0.28); padding:8px 0 8px 32px;">
+        <h3 style="font-family:'CZ Sans',sans-serif; font-size:clamp(18px,2.0vw,32px); font-weight:700; color:var(--text); margin-bottom:14px; line-height:1.2;">Strategi og ledelsesforankring</h3>
+        <p style="font-family:'CZ Sans',sans-serif; font-size:18px; font-weight:400; line-height:1.65; color:rgba(255,255,255,0.55);">Er ESG integreret i virksomhedens retning og ledelsesprocesser? Vi vurderer om der er en klar ESG-strategi, og om ledelsen er forankret i arbejdet.</p>
+      </div>
+      <div style="border-left:1px solid rgba(255,255,255,0.28); padding:8px 0 8px 32px;">
+        <h3 style="font-family:'CZ Sans',sans-serif; font-size:clamp(18px,2.0vw,32px); font-weight:700; color:var(--text); margin-bottom:14px; line-height:1.2;">Data og dokumentation</h3>
+        <p style="font-family:'CZ Sans',sans-serif; font-size:18px; font-weight:400; line-height:1.65; color:rgba(255,255,255,0.55);">Kan virksomheden måle, dokumentere og rapportere på ESG? Vi ser på dataindsamling, sporbarhed og rapporteringspraksis.</p>
+      </div>
+      <div style="border-left:1px solid rgba(255,255,255,0.28); padding:8px 0 8px 32px;">
+        <h3 style="font-family:'CZ Sans',sans-serif; font-size:clamp(18px,2.0vw,32px); font-weight:700; color:var(--text); margin-bottom:14px; line-height:1.2;">Processer og implementering</h3>
+        <p style="font-family:'CZ Sans',sans-serif; font-size:18px; font-weight:400; line-height:1.65; color:rgba(255,255,255,0.55);">Er ESG operationaliseret i konkrete initiativer og processer? Vi undersøger om intentioner er omsat til konkrete handlinger i organisationen.</p>
+      </div>
+      <div style="border-left:1px solid rgba(255,255,255,0.28); padding:8px 0 8px 32px;">
+        <h3 style="font-family:'CZ Sans',sans-serif; font-size:clamp(18px,2.0vw,32px); font-weight:700; color:var(--text); margin-bottom:14px; line-height:1.2;">Kommunikation og transparens</h3>
+        <p style="font-family:'CZ Sans',sans-serif; font-size:18px; font-weight:400; line-height:1.65; color:rgba(255,255,255,0.55);">Kommunikerer virksomheden troværdigt og transparent om ESG eksternt og internt? Vi vurderer bredde og troværdighed i kommunikationen.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT CTA SECTION -->
+  <section style="background:#ffffff; padding:clamp(80px,11vw,160px) 72px;">
+    <div style="display:flex; align-items:flex-start; gap:clamp(40px,4vw,64px); flex-wrap:wrap;">
+      <!-- Left: person card + badge -->
+      <div style="flex-shrink:0; display:flex; align-items:flex-start; gap:clamp(20px,2vw,32px); flex-wrap:wrap;">
+        <!-- Person card -->
+        <div style="display:flex; flex-direction:column; gap:4px; min-width:140px;">
+          <img src="https://placehold.co/72x72/cccccc/888888?text=MS" alt="Morten Søholm" style="width:72px; height:72px; border-radius:50%; object-fit:cover; margin-bottom:12px;">
+          <strong style="font-family:'CZ Sans',sans-serif; font-size:15px; font-weight:700; color:#1B1B1C; line-height:1.3;">Morten Søholm</strong>
+          <span style="font-family:'CZ Sans',sans-serif; font-size:13px; color:#666; line-height:1.5;">Strategic Advisor</span>
+          <span style="font-family:'CZ Sans',sans-serif; font-size:13px; color:#666; line-height:1.5;">+45 60 66 30 60</span>
+          <span style="font-family:'CZ Sans',sans-serif; font-size:13px; color:#666; line-height:1.5;">ms@czoo.dk</span>
+          <a href="mailto:ms@czoo.dk" style="font-family:'CZ Sans',sans-serif; font-size:13px; color:#314AE2; text-decoration:none; display:inline-flex; align-items:center; gap:5px; margin-top:6px; transition:opacity 0.15s ease;" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'">Klar til en snak? →</a>
+        </div>
+        <!-- Blue circular badge -->
+        <svg width="112" height="112" viewBox="0 0 112 112" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0; margin-top:4px;">
+          <circle cx="56" cy="56" r="55" fill="#314AE2"/>
+          <g transform="translate(56,56)">
+            <path d="M0,-16 L4,-4 L16,0 L4,4 L0,16 L-4,4 L-16,0 L-4,-4 Z" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="1.2"/>
+            <circle cx="0" cy="0" r="3" fill="white" opacity="0.8"/>
+          </g>
+          <defs>
+            <path id="cpath" d="M56,56 m-42,0 a42,42 0 1,1 84,0 a42,42 0 1,1,-84,0"/>
+          </defs>
+          <text fill="white" font-size="9" font-family="CZ Sans, sans-serif" font-weight="500" letter-spacing="3.2">
+            <textPath href="#cpath" startOffset="0%">KLAR TIL EN SNAK? · KLAR TIL EN SNAK?</textPath>
+          </text>
+        </svg>
+      </div>
+      <!-- Right: large text -->
+      <p style="font-family:'CZ Sans',sans-serif; font-size:clamp(26px,3.8vw,56px); font-weight:400; color:#1B1B1C; line-height:1.2; letter-spacing:-0.02em; flex:1; min-width:280px;">Vil du vide mere om ESG-parathed? Kontakt Morten for en uformel snak om, hvordan vi kan hjælpe.</p>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer style="background:var(--bg); padding:80px 96px 0;">
+    <!-- Top row: logo + newsletter text -->
+    <div style="display:flex; gap:80px; margin-bottom:80px; align-items:flex-start; flex-wrap:wrap;">
+      <a href="#" aria-label="Creative ZOO" style="display:inline-flex; line-height:0; flex-shrink:0; text-decoration:none;">
+        <svg width="100" height="40" viewBox="0 0 146 58" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4.32377 28.5483C2.99075 27.7618 1.93117 26.6781 1.16212 25.3322C0.39307 23.9864 0 22.5007 0 20.9101C0 19.3195 0.39307 17.8339 1.16212 16.488C1.93117 15.1421 2.99075 14.0584 4.32377 13.2719C5.63971 12.4854 7.09236 12.0833 8.64755 12.0833C10.2198 12.0833 11.6725 12.4854 13.0055 13.2894C14.3214 14.0934 15.3639 15.1596 16.133 16.5055L14.8341 18.9525H12.9542C12.5953 18.0611 12.0314 17.3444 11.2452 16.8026C10.4762 16.2608 9.60459 15.9811 8.64755 15.9811C7.79305 15.9811 7.00691 16.2083 6.28913 16.6453C5.57135 17.0823 4.99028 17.694 4.56303 18.4456C4.13578 19.1972 3.9307 20.0187 3.9307 20.9101C3.9307 21.8015 4.13578 22.623 4.56303 23.3746C4.99028 24.1262 5.57135 24.738 6.28913 25.1749C7.00691 25.6119 7.81014 25.8391 8.64755 25.8391C9.60459 25.8391 10.4762 25.5595 11.2452 25.0176C12.0143 24.4758 12.5783 23.7591 12.9542 22.8677H14.817L16.1159 25.3148C15.3639 26.6606 14.3214 27.7268 12.9884 28.5308C11.6725 29.3349 10.2198 29.7369 8.63046 29.7369C7.09236 29.7369 5.63971 29.3349 4.32377 28.5483ZM33.992 27.2199V29.3698H30.7278L27.2928 24.7554H24.7122V29.3698H20.7815V12.4504H27.7884C28.8821 12.4504 29.8904 12.7301 30.8133 13.2719C31.7362 13.8137 32.4881 14.5653 33.035 15.5092C33.5819 16.453 33.8553 17.4843 33.8553 18.5854C33.8553 19.5992 33.6332 20.5605 33.1717 21.4345C32.7103 22.3259 32.0951 23.0425 31.3089 23.6193L33.992 27.2199ZM24.7293 20.8577H27.9251C28.472 20.8577 28.9505 20.6305 29.3606 20.176C29.7708 19.7216 29.9588 19.1972 29.9588 18.5854C29.9588 17.9737 29.7537 17.4493 29.3606 16.9949C28.9505 16.5579 28.4891 16.3307 27.9251 16.3307H24.7293V20.8577ZM42.0585 16.3307V18.935L46.5019 19.4244V22.3434L42.0585 22.8328V25.4721H49.749V29.3698H38.1449V12.4504H49.749V16.3482H42.0585V16.3307ZM68.1379 27.2199V29.3698H64.549L63.3014 26.0314L62.4469 26.4159H58.0548L57.2003 26.0314L55.9527 29.3698H52.3638V27.2199L57.9352 12.4504H62.5665L68.1379 27.2199ZM60.2423 17.9562L58.5162 22.5182H61.9684L60.2423 17.9562ZM81.8099 15.8588L77.2981 16.3482V29.3873H73.3674V16.3307L68.8557 15.8413V12.4504H81.8099V15.8588ZM89.2782 12.4504V29.3698H85.3475V12.4504H89.2782ZM108.248 12.4504V14.6352L102.694 29.3873H98.3872L92.7988 14.6178V12.4504H96.251L100.523 23.7417L104.779 12.4504H108.248ZM114.742 16.3307V18.935L119.186 19.4244V22.3434L114.742 22.8328V25.4721H122.433V29.3698H110.829V12.4504H122.433V16.3482H114.742V16.3307ZM105.702 37.4275L98.1651 46.5689L105.275 47.1807V50.4667H93.2944V46.5689L100.831 37.4275L93.7217 36.8158V33.5298H105.702V37.4275ZM133.08 37.8295C131.764 37.043 130.704 35.9768 129.918 34.6309C129.132 33.2851 128.756 31.8168 128.756 30.2438C128.756 28.6532 129.149 27.1675 129.918 25.8042C130.704 24.4408 131.747 23.3571 133.08 22.5706C134.396 21.7666 135.849 21.382 137.404 21.382C138.942 21.382 140.377 21.784 141.71 22.5706C143.026 23.3746 144.086 24.4408 144.855 25.8042C145.624 27.1675 146.017 28.6532 146.017 30.2438C146.017 31.8168 145.624 33.2851 144.855 34.6309C144.086 35.9768 143.026 37.043 141.71 37.8295C140.394 38.6161 138.959 39.0181 137.404 39.0181C135.849 39.0181 134.396 38.6161 133.08 37.8295ZM139.762 34.4561C140.48 34.0192 141.044 33.4249 141.471 32.6733C141.881 31.9392 142.103 31.1177 142.103 30.2263C142.103 29.3174 141.898 28.4959 141.471 27.7443C141.061 26.9927 140.48 26.381 139.762 25.9265C139.044 25.4721 138.258 25.2448 137.404 25.2448C136.549 25.2448 135.763 25.4721 135.045 25.909C134.328 26.346 133.746 26.9578 133.319 27.7093C132.892 28.4609 132.687 29.2824 132.687 30.1738C132.687 31.0653 132.892 31.8868 133.319 32.6383C133.746 33.3899 134.328 34.0017 135.045 34.4387C135.763 34.8756 136.566 35.1029 137.404 35.1029C138.241 35.1029 139.044 34.8931 139.762 34.4561ZM112.897 56.8115C111.581 56.0249 110.521 54.9587 109.735 53.6128C108.949 52.267 108.573 50.7988 108.573 49.2257C108.573 47.6351 108.966 46.1494 109.735 44.7861C110.521 43.4227 111.564 42.3391 112.897 41.5525C114.213 40.7485 115.665 40.364 117.22 40.364C118.759 40.364 120.194 40.766 121.527 41.5525C122.843 42.3565 123.903 43.4227 124.672 44.7861C125.441 46.1494 125.834 47.6351 125.834 49.2257C125.834 50.7988 125.441 52.267 124.672 53.6128C123.903 54.9587 122.843 56.0249 121.527 56.8115C120.211 57.598 118.776 58 117.22 58C115.665 58 114.23 57.598 112.897 56.8115ZM119.579 53.4381C120.297 53.0011 120.861 52.4068 121.288 51.6552C121.698 50.9211 121.92 50.0996 121.92 49.2082C121.92 48.2993 121.715 47.4778 121.288 46.7262C120.861 45.9746 120.297 45.3629 119.579 44.9084C118.861 44.454 118.075 44.2268 117.22 44.2268C116.366 44.2268 115.58 44.454 114.862 44.8909C114.144 45.3279 113.563 45.9397 113.136 46.6913C112.709 47.4428 112.504 48.2643 112.504 49.1558C112.504 50.0472 112.709 50.8687 113.136 51.6203C113.563 52.3719 114.144 52.9836 114.862 53.4206C115.58 53.8575 116.383 54.0848 117.22 54.0848C118.075 54.1023 118.861 53.875 119.579 53.4381Z" fill="white"/>
+        </svg>
+      </a>
+      <p style="font-family:'CZ Sans',sans-serif; font-size:16px; font-weight:400; line-height:1.65; color:rgba(255,255,255,0.6); max-width:300px;">Modtag indsigt og inspiration fra vores verden direkte til din mail.</p>
+    </div>
+    <!-- 4-column links -->
+    <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:32px; border-top:1px solid rgba(255,255,255,0.1); padding-top:48px; padding-bottom:48px;">
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <h4 style="font-family:'CZ Sans',sans-serif; font-size:15px; font-weight:700; color:var(--text); margin-bottom:8px; font-style:normal;">Creative ZOO</h4>
+        <a href="tel:+4538400500" style="font-family:'CZ Sans',sans-serif; font-size:14px; color:rgba(255,255,255,0.6); text-decoration:none; transition:color 0.15s;" onmouseover="this.style.color='rgba(255,255,255,0.9)'" onmouseout="this.style.color='rgba(255,255,255,0.6)'">+45 38 400 500</a>
+        <a href="mailto:hej@czoo.dk" style="font-family:'CZ Sans',sans-serif; font-size:14px; color:rgba(255,255,255,0.6); text-decoration:none; transition:color 0.15s;" onmouseover="this.style.color='rgba(255,255,255,0.9)'" onmouseout="this.style.color='rgba(255,255,255,0.6)'">hej@czoo.dk</a>
+        <span style="font-family:'CZ Sans',sans-serif; font-size:14px; color:rgba(255,255,255,0.4);">CVR: DK-31249996</span>
+        <span style="font-family:'CZ Sans',sans-serif; font-size:14px; color:rgba(255,255,255,0.4);">Konto nr.: 7633 0002137181</span>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <h4 style="font-family:'CZ Sans',sans-serif; font-size:15px; font-weight:700; color:var(--text); margin-bottom:8px; font-style:normal;">Aarhus</h4>
+        <span style="font-family:'CZ Sans',sans-serif; font-size:14px; color:rgba(255,255,255,0.6);">Ceresbyen 68B</span>
+        <span style="font-family:'CZ Sans',sans-serif; font-size:14px; color:rgba(255,255,255,0.6);">8000 Aarhus C</span>
+        <a href="#" style="font-family:'CZ Sans',sans-serif; font-size:14px; color:rgba(255,255,255,0.6); text-decoration:none; display:inline-flex; align-items:center; gap:4px; margin-top:8px; transition:color 0.15s;" onmouseover="this.style.color='rgba(255,255,255,0.9)'" onmouseout="this.style.color='rgba(255,255,255,0.6)'">Parkering →</a>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <h4 style="font-family:'CZ Sans',sans-serif; font-size:15px; font-weight:700; color:var(--text); margin-bottom:8px; font-style:normal;">København</h4>
+        <span style="font-family:'CZ Sans',sans-serif; font-size:14px; color:rgba(255,255,255,0.6);">Njalsgade 21E</span>
+        <span style="font-family:'CZ Sans',sans-serif; font-size:14px; color:rgba(255,255,255,0.6);">2300 København S</span>
+        <a href="#" style="font-family:'CZ Sans',sans-serif; font-size:14px; color:rgba(255,255,255,0.6); text-decoration:none; display:inline-flex; align-items:center; gap:4px; margin-top:8px; transition:color 0.15s;" onmouseover="this.style.color='rgba(255,255,255,0.9)'" onmouseout="this.style.color='rgba(255,255,255,0.6)'">Parkering →</a>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <h4 style="font-family:'CZ Sans',sans-serif; font-size:15px; font-weight:700; color:var(--text); margin-bottom:8px; font-style:normal;">Social</h4>
+        <a href="#" style="font-family:'CZ Sans',sans-serif; font-size:14px; color:rgba(255,255,255,0.6); text-decoration:none; display:inline-flex; align-items:center; gap:4px; transition:color 0.15s;" onmouseover="this.style.color='rgba(255,255,255,0.9)'" onmouseout="this.style.color='rgba(255,255,255,0.6)'">LinkedIn ↗</a>
+        <a href="#" style="font-family:'CZ Sans',sans-serif; font-size:14px; color:rgba(255,255,255,0.6); text-decoration:none; display:inline-flex; align-items:center; gap:4px; transition:color 0.15s;" onmouseover="this.style.color='rgba(255,255,255,0.9)'" onmouseout="this.style.color='rgba(255,255,255,0.6)'">Instagram ↗</a>
+      </div>
+    </div>
+    <!-- Bottom bar -->
+    <div style="border-top:1px solid rgba(255,255,255,0.1); padding:24px 0; display:flex; gap:32px; align-items:center;">
+      <span style="font-family:'CZ Sans',sans-serif; font-size:13px; color:rgba(255,255,255,0.35);">Creative ZOO © 2023</span>
+      <a href="#" style="font-family:'CZ Sans',sans-serif; font-size:13px; color:rgba(255,255,255,0.35); text-decoration:none; transition:color 0.15s;" onmouseover="this.style.color='rgba(255,255,255,0.7)'" onmouseout="this.style.color='rgba(255,255,255,0.35)'">Rediger cookies</a>
+    </div>
+  </footer>
+
+</div>
+
+
+<!-- ============================================================
+     QUIZ VIEW
+     ============================================================ -->
+<div id="view-quiz" class="view">
+  <div class="prog-track"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+
+  <!-- Quiz header — same as landing -->
+  <header style="height:120px; padding:0 96px; display:flex; align-items:center; justify-content:space-between; background:var(--bg); position:sticky; top:0; z-index:50; border-bottom:1px solid rgba(255,255,255,0.06);">
+    <a href="#" onclick="showView('view-landing'); return false;" aria-label="Creative ZOO" style="display:inline-flex; line-height:0; text-decoration:none;">
+      <svg width="120" height="48" viewBox="0 0 146 58" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M4.32377 28.5483C2.99075 27.7618 1.93117 26.6781 1.16212 25.3322C0.39307 23.9864 0 22.5007 0 20.9101C0 19.3195 0.39307 17.8339 1.16212 16.488C1.93117 15.1421 2.99075 14.0584 4.32377 13.2719C5.63971 12.4854 7.09236 12.0833 8.64755 12.0833C10.2198 12.0833 11.6725 12.4854 13.0055 13.2894C14.3214 14.0934 15.3639 15.1596 16.133 16.5055L14.8341 18.9525H12.9542C12.5953 18.0611 12.0314 17.3444 11.2452 16.8026C10.4762 16.2608 9.60459 15.9811 8.64755 15.9811C7.79305 15.9811 7.00691 16.2083 6.28913 16.6453C5.57135 17.0823 4.99028 17.694 4.56303 18.4456C4.13578 19.1972 3.9307 20.0187 3.9307 20.9101C3.9307 21.8015 4.13578 22.623 4.56303 23.3746C4.99028 24.1262 5.57135 24.738 6.28913 25.1749C7.00691 25.6119 7.81014 25.8391 8.64755 25.8391C9.60459 25.8391 10.4762 25.5595 11.2452 25.0176C12.0143 24.4758 12.5783 23.7591 12.9542 22.8677H14.817L16.1159 25.3148C15.3639 26.6606 14.3214 27.7268 12.9884 28.5308C11.6725 29.3349 10.2198 29.7369 8.63046 29.7369C7.09236 29.7369 5.63971 29.3349 4.32377 28.5483ZM33.992 27.2199V29.3698H30.7278L27.2928 24.7554H24.7122V29.3698H20.7815V12.4504H27.7884C28.8821 12.4504 29.8904 12.7301 30.8133 13.2719C31.7362 13.8137 32.4881 14.5653 33.035 15.5092C33.5819 16.453 33.8553 17.4843 33.8553 18.5854C33.8553 19.5992 33.6332 20.5605 33.1717 21.4345C32.7103 22.3259 32.0951 23.0425 31.3089 23.6193L33.992 27.2199ZM24.7293 20.8577H27.9251C28.472 20.8577 28.9505 20.6305 29.3606 20.176C29.7708 19.7216 29.9588 19.1972 29.9588 18.5854C29.9588 17.9737 29.7537 17.4493 29.3606 16.9949C28.9505 16.5579 28.4891 16.3307 27.9251 16.3307H24.7293V20.8577ZM42.0585 16.3307V18.935L46.5019 19.4244V22.3434L42.0585 22.8328V25.4721H49.749V29.3698H38.1449V12.4504H49.749V16.3482H42.0585V16.3307ZM68.1379 27.2199V29.3698H64.549L63.3014 26.0314L62.4469 26.4159H58.0548L57.2003 26.0314L55.9527 29.3698H52.3638V27.2199L57.9352 12.4504H62.5665L68.1379 27.2199ZM60.2423 17.9562L58.5162 22.5182H61.9684L60.2423 17.9562ZM81.8099 15.8588L77.2981 16.3482V29.3873H73.3674V16.3307L68.8557 15.8413V12.4504H81.8099V15.8588ZM89.2782 12.4504V29.3698H85.3475V12.4504H89.2782ZM108.248 12.4504V14.6352L102.694 29.3873H98.3872L92.7988 14.6178V12.4504H96.251L100.523 23.7417L104.779 12.4504H108.248ZM114.742 16.3307V18.935L119.186 19.4244V22.3434L114.742 22.8328V25.4721H122.433V29.3698H110.829V12.4504H122.433V16.3482H114.742V16.3307ZM105.702 37.4275L98.1651 46.5689L105.275 47.1807V50.4667H93.2944V46.5689L100.831 37.4275L93.7217 36.8158V33.5298H105.702V37.4275ZM133.08 37.8295C131.764 37.043 130.704 35.9768 129.918 34.6309C129.132 33.2851 128.756 31.8168 128.756 30.2438C128.756 28.6532 129.149 27.1675 129.918 25.8042C130.704 24.4408 131.747 23.3571 133.08 22.5706C134.396 21.7666 135.849 21.382 137.404 21.382C138.942 21.382 140.377 21.784 141.71 22.5706C143.026 23.3746 144.086 24.4408 144.855 25.8042C145.624 27.1675 146.017 28.6532 146.017 30.2438C146.017 31.8168 145.624 33.2851 144.855 34.6309C144.086 35.9768 143.026 37.043 141.71 37.8295C140.394 38.6161 138.959 39.0181 137.404 39.0181C135.849 39.0181 134.396 38.6161 133.08 37.8295ZM139.762 34.4561C140.48 34.0192 141.044 33.4249 141.471 32.6733C141.881 31.9392 142.103 31.1177 142.103 30.2263C142.103 29.3174 141.898 28.4959 141.471 27.7443C141.061 26.9927 140.48 26.381 139.762 25.9265C139.044 25.4721 138.258 25.2448 137.404 25.2448C136.549 25.2448 135.763 25.4721 135.045 25.909C134.328 26.346 133.746 26.9578 133.319 27.7093C132.892 28.4609 132.687 29.2824 132.687 30.1738C132.687 31.0653 132.892 31.8868 133.319 32.6383C133.746 33.3899 134.328 34.0017 135.045 34.4387C135.763 34.8756 136.566 35.1029 137.404 35.1029C138.241 35.1029 139.044 34.8931 139.762 34.4561ZM112.897 56.8115C111.581 56.0249 110.521 54.9587 109.735 53.6128C108.949 52.267 108.573 50.7988 108.573 49.2257C108.573 47.6351 108.966 46.1494 109.735 44.7861C110.521 43.4227 111.564 42.3391 112.897 41.5525C114.213 40.7485 115.665 40.364 117.22 40.364C118.759 40.364 120.194 40.766 121.527 41.5525C122.843 42.3565 123.903 43.4227 124.672 44.7861C125.441 46.1494 125.834 47.6351 125.834 49.2257C125.834 50.7988 125.441 52.267 124.672 53.6128C123.903 54.9587 122.843 56.0249 121.527 56.8115C120.211 57.598 118.776 58 117.22 58C115.665 58 114.23 57.598 112.897 56.8115ZM119.579 53.4381C120.297 53.0011 120.861 52.4068 121.288 51.6552C121.698 50.9211 121.92 50.0996 121.92 49.2082C121.92 48.2993 121.715 47.4778 121.288 46.7262C120.861 45.9746 120.297 45.3629 119.579 44.9084C118.861 44.454 118.075 44.2268 117.22 44.2268C116.366 44.2268 115.58 44.454 114.862 44.8909C114.144 45.3279 113.563 45.9397 113.136 46.6913C112.709 47.4428 112.504 48.2643 112.504 49.1558C112.504 50.0472 112.709 50.8687 113.136 51.6203C113.563 52.3719 114.144 52.9836 114.862 53.4206C115.58 53.8575 116.383 54.0848 117.22 54.0848C118.075 54.1023 118.861 53.875 119.579 53.4381Z" fill="white"/>
+      </svg>
+    </a>
+    <span style="font-family:'CZ Sans',sans-serif; font-size:22px; font-weight:400; color:var(--text); opacity:0.85;">ESG Parathedstesten</span>
+  </header>
+
+  <div style="max-width: 860px; margin: 0 auto; padding: 64px 74px 80px; min-height: calc(100vh - 120px); display: flex; flex-direction: column;">
+
+    <!-- Question area -->
+    <div style="flex: 1;" id="q-area">
+      <div id="q-dim" style="font-family:'CZ Sans',sans-serif; font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.4); margin-bottom: 20px; font-weight: 400; display: flex; align-items: center; gap: 10px;">
+        <span id="q-dim-num"></span>
+        <span style="width: 20px; height: 1px; background: currentColor; display:inline-block;"></span>
+        <span id="q-dim-name"></span>
+      </div>
+
+      <h2 id="q-text" style="font-family:'CZ Sans',sans-serif; font-size: clamp(22px, 3.2vw, 40px); font-weight: 400; margin-bottom: 48px; line-height: 1.25; max-width: 680px; color: var(--text);"></h2>
+
+      <div id="q-opts" style="display: flex; flex-direction: column;"></div>
+
+      <div style="margin-top: 48px; display: flex; justify-content: space-between; align-items: center; gap: 20px;">
+        <button id="btn-prev" onclick="prevQuestion()" style="display:none; background:none; border:none; cursor:pointer; font-family:'CZ Sans',sans-serif; font-size:15px; color:rgba(255,255,255,0.45); padding:0; display:none; align-items:center; gap:10px; transition:color 0.15s ease;" onmouseover="this.style.color='rgba(255,255,255,0.85)'" onmouseout="this.style.color='rgba(255,255,255,0.45)'">
+          <svg width="24" height="10" viewBox="0 0 24 10" fill="none"><path d="M24 5H2M8 1L2 5l6 4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Tilbage
+        </button>
+        <div></div>
+        <button id="btn-next" disabled onclick="nextQuestion()" style="background:none; border:none; cursor:pointer; font-family:'CZ Sans',sans-serif; font-size:18px; font-weight:400; color:var(--text); padding:0; display:inline-flex; align-items:center; gap:14px; transition:opacity 0.15s ease;" onmouseover="if(!this.disabled)this.style.opacity='0.65'" onmouseout="this.style.opacity='1'">
+          <svg width="28" height="12" viewBox="0 0 28 12" fill="none"><path d="M0 6H26M20 1l6 5-6 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Næste
+        </button>
+      </div>
+    </div>
+
+    <!-- Dimension dots -->
+    <div style="padding-top: 48px; display: flex; gap: 8px; align-items: center;" id="q-dots"></div>
+
+  </div>
+</div>
+
+
+<!-- ============================================================
+     LEAD VIEW
+     ============================================================ -->
+<div id="view-lead" class="view">
+  <div class="wrap-sm" style="min-height: 100vh; display: flex; flex-direction: column; justify-content: center; padding-top: 64px; padding-bottom: 64px;">
+
+    <div style="margin-bottom: 6px; font-family:'CZ Sans',sans-serif; font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.4); font-weight: 400; display: flex; align-items: center; gap: 10px;">
+      <span style="display: inline-block; width: 20px; height: 1px; background: currentColor;"></span>
+      Næsten klar
+    </div>
+    <h2 style="font-size: clamp(28px, 4vw, 44px); margin-bottom: 16px; line-height: 1.1;">Se jeres ESG-rapport</h2>
+    <p style="color: rgba(239,238,234,0.55); margin-bottom: 44px; font-size: 15px; line-height: 1.75; max-width: 460px;">
+      Udfyld dine oplysninger herunder for at se din personlige ESG-modenhedsrapport med score på alle fire dimensioner.
+    </p>
+
+    <form id="lead-form" onsubmit="submitLead(event)" style="display: flex; flex-direction: column; gap: 18px; max-width: 440px;">
+      <div class="field">
+        <label class="label">Navn</label>
+        <input class="input" type="text" id="l-name" placeholder="Dit fulde navn" required autocomplete="name">
+      </div>
+      <div class="field">
+        <label class="label">Email</label>
+        <input class="input" type="email" id="l-email" placeholder="din@email.dk" required autocomplete="email">
+      </div>
+      <div class="field">
+        <label class="label">Virksomhed</label>
+        <input class="input" type="text" id="l-company" placeholder="Virksomhedens navn" required autocomplete="organization">
+      </div>
+
+      <p style="font-family:'CZ Sans',sans-serif; font-size: 13px; color: var(--muted); line-height: 1.7; padding-top: 8px;">
+        Dine oplysninger behandles fortroligt og deles ikke med tredjepart. Du vil kun blive kontaktet i forbindelse med din ESG-rapport.
+      </p>
+
+      <button type="submit" style="background:none; border:none; cursor:pointer; display:inline-flex; align-items:center; gap:14px; color:var(--text); font-family:'CZ Sans',sans-serif; font-size:18px; font-weight:400; padding:0; margin-top:16px; transition:opacity 0.15s ease; align-self:flex-start;" onmouseover="this.style.opacity='0.65'" onmouseout="this.style.opacity='1'">
+        <svg width="28" height="12" viewBox="0 0 28 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0 6H26M20 1l6 5-6 5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Vis min ESG-rapport
+      </button>
+    </form>
+
+  </div>
+</div>
+
+
+<!-- ============================================================
+     RESULTS VIEW
+     ============================================================ -->
+<div id="view-results" class="view">
+  <div style="background: radial-gradient(ellipse 60% 40% at 80% 0%, rgba(49,63,147,0.08) 0%, transparent 55%), var(--bg);">
+
+    <!-- Results header — same as quiz -->
+    <header style="height:120px; padding:0 96px; display:flex; align-items:center; justify-content:space-between; background:var(--bg); position:sticky; top:0; z-index:50; border-bottom:1px solid rgba(255,255,255,0.06);" class="no-print">
+      <a href="#" onclick="showView('view-landing'); return false;" aria-label="Creative ZOO" style="display:inline-flex; line-height:0; text-decoration:none;">
+        <svg width="120" height="48" viewBox="0 0 146 58" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4.32377 28.5483C2.99075 27.7618 1.93117 26.6781 1.16212 25.3322C0.39307 23.9864 0 22.5007 0 20.9101C0 19.3195 0.39307 17.8339 1.16212 16.488C1.93117 15.1421 2.99075 14.0584 4.32377 13.2719C5.63971 12.4854 7.09236 12.0833 8.64755 12.0833C10.2198 12.0833 11.6725 12.4854 13.0055 13.2894C14.3214 14.0934 15.3639 15.1596 16.133 16.5055L14.8341 18.9525H12.9542C12.5953 18.0611 12.0314 17.3444 11.2452 16.8026C10.4762 16.2608 9.60459 15.9811 8.64755 15.9811C7.79305 15.9811 7.00691 16.2083 6.28913 16.6453C5.57135 17.0823 4.99028 17.694 4.56303 18.4456C4.13578 19.1972 3.9307 20.0187 3.9307 20.9101C3.9307 21.8015 4.13578 22.623 4.56303 23.3746C4.99028 24.1262 5.57135 24.738 6.28913 25.1749C7.00691 25.6119 7.81014 25.8391 8.64755 25.8391C9.60459 25.8391 10.4762 25.5595 11.2452 25.0176C12.0143 24.4758 12.5783 23.7591 12.9542 22.8677H14.817L16.1159 25.3148C15.3639 26.6606 14.3214 27.7268 12.9884 28.5308C11.6725 29.3349 10.2198 29.7369 8.63046 29.7369C7.09236 29.7369 5.63971 29.3349 4.32377 28.5483ZM33.992 27.2199V29.3698H30.7278L27.2928 24.7554H24.7122V29.3698H20.7815V12.4504H27.7884C28.8821 12.4504 29.8904 12.7301 30.8133 13.2719C31.7362 13.8137 32.4881 14.5653 33.035 15.5092C33.5819 16.453 33.8553 17.4843 33.8553 18.5854C33.8553 19.5992 33.6332 20.5605 33.1717 21.4345C32.7103 22.3259 32.0951 23.0425 31.3089 23.6193L33.992 27.2199ZM24.7293 20.8577H27.9251C28.472 20.8577 28.9505 20.6305 29.3606 20.176C29.7708 19.7216 29.9588 19.1972 29.9588 18.5854C29.9588 17.9737 29.7537 17.4493 29.3606 16.9949C28.9505 16.5579 28.4891 16.3307 27.9251 16.3307H24.7293V20.8577ZM42.0585 16.3307V18.935L46.5019 19.4244V22.3434L42.0585 22.8328V25.4721H49.749V29.3698H38.1449V12.4504H49.749V16.3482H42.0585V16.3307ZM68.1379 27.2199V29.3698H64.549L63.3014 26.0314L62.4469 26.4159H58.0548L57.2003 26.0314L55.9527 29.3698H52.3638V27.2199L57.9352 12.4504H62.5665L68.1379 27.2199ZM60.2423 17.9562L58.5162 22.5182H61.9684L60.2423 17.9562ZM81.8099 15.8588L77.2981 16.3482V29.3873H73.3674V16.3307L68.8557 15.8413V12.4504H81.8099V15.8588ZM89.2782 12.4504V29.3698H85.3475V12.4504H89.2782ZM108.248 12.4504V14.6352L102.694 29.3873H98.3872L92.7988 14.6178V12.4504H96.251L100.523 23.7417L104.779 12.4504H108.248ZM114.742 16.3307V18.935L119.186 19.4244V22.3434L114.742 22.8328V25.4721H122.433V29.3698H110.829V12.4504H122.433V16.3482H114.742V16.3307ZM105.702 37.4275L98.1651 46.5689L105.275 47.1807V50.4667H93.2944V46.5689L100.831 37.4275L93.7217 36.8158V33.5298H105.702V37.4275ZM133.08 37.8295C131.764 37.043 130.704 35.9768 129.918 34.6309C129.132 33.2851 128.756 31.8168 128.756 30.2438C128.756 28.6532 129.149 27.1675 129.918 25.8042C130.704 24.4408 131.747 23.3571 133.08 22.5706C134.396 21.7666 135.849 21.382 137.404 21.382C138.942 21.382 140.377 21.784 141.71 22.5706C143.026 23.3746 144.086 24.4408 144.855 25.8042C145.624 27.1675 146.017 28.6532 146.017 30.2438C146.017 31.8168 145.624 33.2851 144.855 34.6309C144.086 35.9768 143.026 37.043 141.71 37.8295C140.394 38.6161 138.959 39.0181 137.404 39.0181C135.849 39.0181 134.396 38.6161 133.08 37.8295ZM139.762 34.4561C140.48 34.0192 141.044 33.4249 141.471 32.6733C141.881 31.9392 142.103 31.1177 142.103 30.2263C142.103 29.3174 141.898 28.4959 141.471 27.7443C141.061 26.9927 140.48 26.381 139.762 25.9265C139.044 25.4721 138.258 25.2448 137.404 25.2448C136.549 25.2448 135.763 25.4721 135.045 25.909C134.328 26.346 133.746 26.9578 133.319 27.7093C132.892 28.4609 132.687 29.2824 132.687 30.1738C132.687 31.0653 132.892 31.8868 133.319 32.6383C133.746 33.3899 134.328 34.0017 135.045 34.4387C135.763 34.8756 136.566 35.1029 137.404 35.1029C138.241 35.1029 139.044 34.8931 139.762 34.4561ZM112.897 56.8115C111.581 56.0249 110.521 54.9587 109.735 53.6128C108.949 52.267 108.573 50.7988 108.573 49.2257C108.573 47.6351 108.966 46.1494 109.735 44.7861C110.521 43.4227 111.564 42.3391 112.897 41.5525C114.213 40.7485 115.665 40.364 117.22 40.364C118.759 40.364 120.194 40.766 121.527 41.5525C122.843 42.3565 123.903 43.4227 124.672 44.7861C125.441 46.1494 125.834 47.6351 125.834 49.2257C125.834 50.7988 125.441 52.267 124.672 53.6128C123.903 54.9587 122.843 56.0249 121.527 56.8115C120.211 57.598 118.776 58 117.22 58C115.665 58 114.23 57.598 112.897 56.8115ZM119.579 53.4381C120.297 53.0011 120.861 52.4068 121.288 51.6552C121.698 50.9211 121.92 50.0996 121.92 49.2082C121.92 48.2993 121.715 47.4778 121.288 46.7262C120.861 45.9746 120.297 45.3629 119.579 44.9084C118.861 44.454 118.075 44.2268 117.22 44.2268C116.366 44.2268 115.58 44.454 114.862 44.8909C114.144 45.3279 113.563 45.9397 113.136 46.6913C112.709 47.4428 112.504 48.2643 112.504 49.1558C112.504 50.0472 112.709 50.8687 113.136 51.6203C113.563 52.3719 114.144 52.9836 114.862 53.4206C115.58 53.8575 116.383 54.0848 117.22 54.0848C118.075 54.1023 118.861 53.875 119.579 53.4381Z" fill="white"/>
+        </svg>
+      </a>
+      <div style="display:flex; align-items:center; gap:32px;">
+        <span style="font-family:'CZ Sans',sans-serif; font-size:22px; font-weight:400; color:var(--text); opacity:0.85;">ESG Parathedstesten</span>
+        <button class="btn-outline" onclick="window.print()" style="font-size:13px; padding:9px 18px;">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5V1h8v4M3 10H1V5h12v5h-2M3 8h8v5H3V8z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>
+          Gem som PDF
+        </button>
+      </div>
+    </header>
+
+    <div class="wrap" style="padding-top: 72px; padding-bottom: 96px;">
+
+      <!-- Score hero -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: start; margin-bottom: 72px;" id="results-hero">
+        <!-- Left: score -->
+        <div>
+          <p style="font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 20px;">ESG Modenhedsrapport</p>
+          <div id="r-name" style="font-size: 15px; color: rgba(239,238,234,0.5); margin-bottom: 28px;"></div>
+          <div style="display: flex; align-items: baseline; gap: 12px; margin-bottom: 16px;">
+            <span id="r-score" style="font-family: 'CZ Slab', serif; font-size: 88px; line-height: 1; letter-spacing: -0.04em; color: var(--text);"></span>
+            <span style="font-size: 24px; color: var(--muted); font-family: 'CZ Slab', serif;">/100</span>
+          </div>
+          <div id="r-badge" class="level-badge" style="margin-bottom: 24px;"></div>
+          <p id="r-desc" style="font-size: 15px; color: rgba(239,238,234,0.6); line-height: 1.7; max-width: 360px;"></p>
+        </div>
+
+        <!-- Right: dimension overview -->
+        <div style="padding-top: 56px;">
+          <div id="r-overview" style="display: flex; flex-direction: column; gap: 20px;"></div>
+        </div>
+      </div>
+
+      <hr style="margin-bottom: 64px;">
+
+      <!-- Dimension breakdown -->
+      <div style="margin-bottom: 12px;">
+        <h2 style="font-size: 28px; margin-bottom: 8px;">Resultater per dimension</h2>
+        <p style="font-size: 15px; color: var(--muted);">Detaljeret vurdering af jeres ESG-arbejde på tværs af de fire dimensioner.</p>
+      </div>
+
+      <div id="r-dims" style="display: flex; flex-direction: column; gap: 2px; margin-top: 36px; margin-bottom: 72px;"></div>
+
+      <hr style="margin-bottom: 64px;">
+
+      <!-- Next steps -->
+      <div style="margin-bottom: 64px;">
+        <p style="font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 20px;">Anbefalede næste skridt</p>
+        <h2 style="font-size: 28px; margin-bottom: 28px;" id="r-steps-title"></h2>
+        <div id="r-steps" style="display: flex; flex-direction: column; gap: 16px;"></div>
+      </div>
+
+      <!-- CTA -->
+      <div style="padding: 48px; background: var(--surface); border: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 32px; flex-wrap: wrap;" class="no-print">
+        <div>
+          <h3 style="font-size: 22px; margin-bottom: 8px; line-height: 1.2;">Vil du vide mere om, hvordan Creative ZOO kan hjælpe?</h3>
+          <p style="font-size: 14px; color: var(--muted); line-height: 1.6;">Kontakt os for en uformel snak om jeres ESG-rejse og næste skridt.</p>
+        </div>
+        <a href="https://czoo.dk" target="_blank" class="btn" style="flex-shrink: 0;">
+          Book en gratis samtale
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<!-- ============================================================
+     JAVASCRIPT
+     ============================================================ -->
+<script>
+const DIMS = [
+  { name: 'Strategi og ledelsesforankring', short: 'Strategi' },
+  { name: 'Data og dokumentation',           short: 'Data' },
+  { name: 'Processer og implementering',     short: 'Processer' },
+  { name: 'Kommunikation og transparens',    short: 'Kommunikation' },
+];
+
+const QUESTIONS = [
+  // Dim 0 — Strategi
+  "ESG er eksplicit nævnt i vores virksomhedsstrategi eller forretningsplan",
+  "Vores øverste ledelse bakker aktivt op om og prioriterer ESG-arbejdet",
+  "Vi har formuleret konkrete, målbare ESG-mål og -ambitioner",
+  "Der er udpeget en ansvarlig person eller funktion, der driver ESG-arbejdet",
+  "ESG indgår som et parameter i vores strategiske prioriterings- og beslutningsprocesser",
+  // Dim 1 — Data
+  "Vi indsamler løbende data om vores virksomheds miljø- og sociale påvirkning",
+  "Vi har defineret specifikke KPI'er til at måle vores ESG-præstation",
+  "Vi måler, beregner eller estimerer vores samlede CO₂-udledning",
+  "Vi anvender systemer eller digitale værktøjer til at strukturere ESG-data",
+  "Vi udarbejder regelmæssig ESG-rapportering – internt eller eksternt",
+  // Dim 2 — Processer
+  "Vi har konkrete ESG-initiativer, der er aktivt i gang i virksomheden",
+  "ESG-hensyn er integreret i vores interne arbejdsprocesser og procedurer",
+  "Vores medarbejdere er aktivt involverede i og informerede om ESG-arbejdet",
+  "Vi stiller ESG-krav eller -forventninger til vores leverandører",
+  "Vi følger systematisk op på fremdriften i vores ESG-initiativer",
+  // Dim 3 — Kommunikation
+  "Vi kommunikerer aktivt og eksternt om vores ESG-arbejde og resultater",
+  "Vores ESG-dokumentation er tilgængelig for relevante interessenter",
+  "Vi er transparente om både succeser og udfordringer i vores ESG-arbejde",
+  "Vi vurderer, at vores ESG-kommunikation opleves som troværdig af omverdenen",
+  "Vi er i aktiv, løbende dialog med relevante stakeholders om ESG",
+];
+
+const LIKERT = [
+  { val: 1, label: 'Slet ikke' },
+  { val: 2, label: 'I begrænset grad' },
+  { val: 3, label: 'Delvist' },
+  { val: 4, label: 'I høj grad' },
+  { val: 5, label: 'Fuldt implementeret' },
+];
+
+// State
+let currentQ = 0;
+let answers   = new Array(20).fill(null);
+let leadData  = {};
+
+// ===== NAVIGATION =====
+function showView(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function startQuiz() {
+  currentQ = 0;
+  answers   = new Array(20).fill(null);
+  showView('view-quiz');
+  renderQuestion();
+}
+
+// ===== QUIZ =====
+function renderQuestion() {
+  const q       = QUESTIONS[currentQ];
+  const dimIdx  = Math.floor(currentQ / 5);
+  const qInDim  = (currentQ % 5) + 1;
+  const pct     = (currentQ / 20) * 100;
+
+  // Progress
+  document.getElementById('prog-fill').style.width = pct + '%';
+  const counter = document.getElementById('quiz-counter');
+  if (counter) counter.textContent = `${currentQ + 1} / 20`;
+
+  // Dimension label
+  document.getElementById('q-dim-num').textContent = `0${dimIdx + 1}`;
+  document.getElementById('q-dim-name').textContent = DIMS[dimIdx].name;
+
+  // Question
+  document.getElementById('q-text').textContent = q;
+
+  // Options
+  const opts = document.getElementById('q-opts');
+  opts.innerHTML = '';
+  LIKERT.forEach(({ val, label }) => {
+    const div = document.createElement('div');
+    div.className = 'opt' + (answers[currentQ] === val ? ' sel' : '');
+    div.setAttribute('tabindex', '0');
+    div.setAttribute('role', 'radio');
+    div.setAttribute('aria-checked', answers[currentQ] === val ? 'true' : 'false');
+    div.innerHTML = `
+      <div class="opt-num">${val}</div>
+      <span class="opt-label">${label}</span>`;
+    div.onclick = () => selectAnswer(val);
+    div.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectAnswer(val); } };
+    opts.appendChild(div);
+  });
+
+  // Buttons
+  document.getElementById('btn-next').disabled = answers[currentQ] === null;
+  document.getElementById('btn-prev').style.display = currentQ > 0 ? 'inline-flex' : 'none';
+
+  // Dots
+  renderDots(dimIdx);
+}
+
+function renderDots(activeDim) {
+  const el = document.getElementById('q-dots');
+  el.innerHTML = '';
+  DIMS.forEach((d, i) => {
+    const dot = document.createElement('div');
+    const done = i < activeDim;
+    const active = i === activeDim;
+    dot.style.cssText = `
+      height: 1px; flex: 1;
+      background: ${done ? 'rgba(255,255,255,0.8)' : active ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.12)'};
+      transition: background 0.3s ease;`;
+    el.appendChild(dot);
+  });
+
+  const label = document.createElement('span');
+  label.style.cssText = 'font-size:12px; color: var(--muted); margin-left: 12px; white-space: nowrap;';
+  label.textContent = `Dim. ${activeDim + 1} af 4`;
+  el.appendChild(label);
+}
+
+function selectAnswer(val) {
+  answers[currentQ] = val;
+  document.querySelectorAll('#q-opts .opt').forEach((el, i) => {
+    const v = LIKERT[i].val;
+    el.classList.toggle('sel', v === val);
+    el.setAttribute('aria-checked', v === val ? 'true' : 'false');
+  });
+  document.getElementById('btn-next').disabled = false;
+  setTimeout(() => nextQuestion(), 420);
+}
+
+function nextQuestion() {
+  if (answers[currentQ] === null) return;
+  if (currentQ < 19) {
+    currentQ++;
+    renderQuestion();
+  } else {
+    // Done — go to lead capture
+    showView('view-lead');
+  }
+}
+
+function prevQuestion() {
+  if (currentQ > 0) {
+    currentQ--;
+    renderQuestion();
+  }
+}
+
+// ===== LEAD FORM =====
+function submitLead(e) {
+  e.preventDefault();
+  leadData = {
+    name:    document.getElementById('l-name').value.trim(),
+    email:   document.getElementById('l-email').value.trim(),
+    company: document.getElementById('l-company').value.trim(),
+  };
+  showView('view-results');
+  renderResults();
+}
+
+// ===== SCORES =====
+function computeScores() {
+  const dimScores = DIMS.map((_, i) => {
+    const slice = answers.slice(i * 5, i * 5 + 5);
+    return slice.reduce((s, v) => s + (v || 0), 0);
+  });
+  const total = dimScores.reduce((s, v) => s + v, 0);
+  return { dimScores, total };
+}
+
+function getLevel(score) {
+  if (score <= 25) return { label: 'Tidlig fase',   color: '#fe6c7a', bg: 'rgba(254,108,122,0.12)' };
+  if (score <= 50) return { label: 'På vej',         color: '#feed48', bg: 'rgba(254,237,72,0.10)' };
+  if (score <= 75) return { label: 'Struktureret',   color: '#ebebeb', bg: 'rgba(235,235,235,0.08)' };
+  return             { label: 'Avanceret',            color: '#313f93', bg: 'rgba(49,63,147,0.20)' };
+}
+
+function getDesc(score) {
+  if (score <= 25) return 'ESG-arbejdet er endnu ikke struktureret i jeres virksomhed. I har et godt udgangspunkt for at opbygge et solidt fundament fra bunden.';
+  if (score <= 50) return 'I har taget de første skridt med ESG. Nu handler det om at systematisere indsatsen og skabe sammenhæng på tværs af dimensionerne.';
+  if (score <= 75) return 'I arbejder aktivt og struktureret med ESG. Der er basis for at løfte indsatsen til næste niveau og integrere ESG endnu dybere i organisationen.';
+  return 'ESG er dybt integreret i jeres organisation. I er godt positioneret til at styrke jeres position og kommunikere ESG med høj troværdighed.';
+}
+
+function getDimLevel(s) {
+  if (s <= 10) return { label: 'Ikke påbegyndt', color: 'rgba(255,255,255,0.28)' };
+  if (s <= 15) return { label: 'Tidlig fase',    color: '#fe6c7a' };
+  if (s <= 20) return { label: 'Under udvikling', color: '#feed48' };
+  return             { label: 'Modent niveau',    color: '#313f93' };
+}
+
+function getDimText(dimIdx, score) {
+  const n = DIMS[dimIdx].name;
+  if (score <= 10) return `Der er endnu ikke sat en struktureret ramme op for ${n.toLowerCase()}. Dette er et oplagt startpunkt for at skabe fundamentet.`;
+  if (score <= 15) return `I er begyndt at arbejde med ${n.toLowerCase()}, men indsatsen er stadig fragmenteret og mangler en samlet struktur.`;
+  if (score <= 20) return `I arbejder aktivt med ${n.toLowerCase()}, men der er stadig vigtige elementer, som mangler at blive implementeret fuldt ud.`;
+  return `${n} er veletableret i jeres virksomhed. I har et stærkt fundament at bygge videre på og videndele med omverdenen.`;
+}
+
+function getSteps(score) {
+  if (score <= 25) return {
+    title: 'Byg fundamentet',
+    steps: [
+      'Definér en overordnet ESG-strategi og få ledelsens formelle opbakning',
+      'Udpeg en intern ESG-ansvarlig og sæt de første konkrete mål',
+      'Start med at kortlægge virksomhedens væsentligste miljø- og sociale påvirkninger',
+      'Identificér de relevante datakilder og start simpel dataindsamling',
+    ],
+  };
+  if (score <= 50) return {
+    title: 'Strukturér og systematisér',
+    steps: [
+      'Formalisér jeres ESG-mål og KPI\'er og forankre dem i ledelsen',
+      'Implementér et simpelt system til dataindsamling og -opfølgning',
+      'Involvér medarbejderne og skab bred forståelse for ESG i organisationen',
+      'Kommunikér jeres ESG-arbejde eksternt – også selvom det er i tidlig fase',
+    ],
+  };
+  if (score <= 75) return {
+    title: 'Løft til næste niveau',
+    steps: [
+      'Integrer ESG fuldt ud i strategiprocessen og den løbende rapportering',
+      'Sæt ambitiøse og målbare mål, der matcher jeres modenhedsniveau',
+      'Styrk dialogen med leverandører og øvrige stakeholders om ESG',
+      'Overvej ekstern ESG-rapportering og dokumentér fremdriften systematisk',
+    ],
+  };
+  return {
+    title: 'Stå frem som ESG-frontløber',
+    steps: [
+      'Sæt ambitiøse mål der rækker ud over lovkrav og branchestandarder',
+      'Del jeres læringer og resultater eksternt og positionér jer som thought leader',
+      'Integrer ESG i virksomhedens innovationsagenda og produktudvikling',
+      'Engagér jer aktivt i brancheinitiaitiver og standardiseringsarbejde',
+    ],
+  };
+}
+
+// ===== RENDER RESULTS =====
+function renderResults() {
+  const { dimScores, total } = computeScores();
+  const lvl   = getLevel(total);
+  const desc  = getDesc(total);
+  const steps = getSteps(total);
+
+  // Name + company
+  document.getElementById('r-name').textContent =
+    `${leadData.name} · ${leadData.company}`;
+
+  // Score
+  document.getElementById('r-score').textContent = total;
+
+  // Badge
+  document.getElementById('r-badge').innerHTML =
+    `<span style="width:8px;height:8px;background:${lvl.color};display:inline-block;"></span> ${lvl.label}`;
+  document.getElementById('r-badge').style.cssText +=
+    `; background: ${lvl.bg}; color: ${lvl.color}; border: 1px solid ${lvl.color}40;`;
+
+  // Desc
+  document.getElementById('r-desc').textContent = desc;
+
+  // Overview bars
+  const ov = document.getElementById('r-overview');
+  ov.innerHTML = '';
+  dimScores.forEach((s, i) => {
+    const dl = getDimLevel(s);
+    ov.innerHTML += `
+      <div>
+        <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px;">
+          <span style="font-size:13px; color:rgba(239,238,234,0.65);">${DIMS[i].short}</span>
+          <span style="font-size:13px; font-weight:500; color:${dl.color};">${s}/25</span>
+        </div>
+        <div class="bar-track">
+          <div class="bar-fill" style="width:0%; background:${dl.color};" data-target="${(s/25)*100}"></div>
+        </div>
+      </div>`;
+  });
+
+  // Dimension detail
+  const dimsEl = document.getElementById('r-dims');
+  dimsEl.innerHTML = '';
+  dimScores.forEach((s, i) => {
+    const dl = getDimLevel(s);
+    const txt = getDimText(i, s);
+    dimsEl.innerHTML += `
+      <div style="padding:32px; background:var(--surface); border:1px solid var(--border); margin-bottom:8px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:20px;">
+          <div>
+            <span style="font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:6px;">Dimension ${i+1}</span>
+            <h3 style="font-size:20px; line-height:1.2;">${DIMS[i].name}</h3>
+          </div>
+          <div style="text-align:right; flex-shrink:0;">
+            <span style="font-family:'CZ Slab',serif; font-size:36px; letter-spacing:-0.03em; color:${dl.color};">${s}</span>
+            <span style="font-size:16px; color:var(--muted);font-family:'CZ Slab',serif;">/25</span>
+            <div style="font-size:12px; color:${dl.color}; margin-top:2px;">${dl.label}</div>
+          </div>
+        </div>
+        <div class="bar-track" style="margin-bottom:20px;">
+          <div class="bar-fill" style="width:0%; background:${dl.color};" data-target="${(s/25)*100}"></div>
+        </div>
+        <p style="font-size:14px; color:rgba(239,238,234,0.6); line-height:1.75;">${txt}</p>
+      </div>`;
+  });
+
+  // Steps
+  document.getElementById('r-steps-title').textContent = steps.title;
+  const stepsEl = document.getElementById('r-steps');
+  stepsEl.innerHTML = '';
+  steps.steps.forEach((s, i) => {
+    stepsEl.innerHTML += `
+      <div style="display:flex; gap:16px; align-items:flex-start;">
+        <span style="flex-shrink:0; width:24px; height:24px; border:1px solid var(--border); display:inline-flex; align-items:center; justify-content:center; font-size:11px; color:var(--muted); margin-top:1px;">${i+1}</span>
+        <span style="font-size:15px; color:rgba(239,238,234,0.7); line-height:1.65;">${s}</span>
+      </div>`;
+  });
+
+  // Animate bars after paint
+  requestAnimationFrame(() => {
+    setTimeout(() => {
+      document.querySelectorAll('.bar-fill[data-target]').forEach(bar => {
+        bar.style.width = bar.dataset.target + '%';
+      });
+    }, 100);
+  });
+}
+</script>
+
+</body>
+</html>
