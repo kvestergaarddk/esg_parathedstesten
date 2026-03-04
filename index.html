@@ -256,8 +256,8 @@
         padding: 0 20px !important;
         min-height: auto !important;
       }
-      .hero-img { display: none !important; }
-      .hero-text { padding: 56px 0 64px !important; }
+      .hero-img { height: 300px !important; }
+      .hero-text { padding: 56px 0 48px !important; }
 
       .dim-section { padding: 64px 20px !important; }
       .dim-grid { grid-template-columns: 1fr !important; gap: 40px !important; }
@@ -1058,10 +1058,11 @@ function renderResults() {
       p.x += p.vx + p.scatterX * CFG.scatter;
       p.y += p.vy + p.scatterY * CFG.scatter;
 
-      // Size: base + depth wiggle + size wiggle (sin-based, cheap)
-      const depthMod = Math.sin(t * 0.6 + p.depthPh) * p.r3 * CFG.depth;
-      const sizeMod  = (Math.sin(t * 0.5 + p.sizePh) + 1.0) * 0.5; // 0–1
-      let sz = Math.max(1, Math.round(CFG.size * (1 + depthMod) * (0.5 + sizeMod * 0.5)));
+      // Size: (snoise(t,rindex)+1) * sizeWiggle * size  →  0–4px range
+      // Plus per-particle depth bias (r3²) for large "highlight" particles
+      const sizeWiggle = (Math.sin(t * 0.5 + p.sizePh) + 1.0); // 0–2
+      const depthBias  = p.r3 * p.r3 * CFG.depth * 5;           // 0–1.5, skewed large
+      let sz = Math.max(1, Math.round(sizeWiggle * CFG.size + depthBias));
 
       // Write sz×sz pixel block directly into buffer
       const ix = Math.round(p.x), iy = Math.round(p.y);
