@@ -264,12 +264,23 @@
       .header-title { font-size: 16px !important; }
 
       .hero-section {
-        grid-template-columns: 1fr !important;
-        padding: 0 20px !important;
+        flex-direction: column !important;
+        padding: 0 !important;
         min-height: auto !important;
+        overflow: visible !important;
+        align-items: stretch !important;
       }
-      .hero-img { aspect-ratio: 1 / 1 !important; height: auto !important; width: calc(100% + 40px) !important; margin: 0 -20px !important; }
-      .hero-text { padding: 104px 0 24px !important; }
+      #particle-canvas {
+        position: relative !important;
+        top: auto !important; right: auto !important;
+        width: 100% !important;
+        height: 72vw !important;
+        min-height: 260px !important;
+        max-height: 400px !important;
+        opacity: 1 !important;
+        display: block !important;
+      }
+      .hero-text { padding: 88px 20px 40px !important; max-width: 100% !important; }
 
       .dim-section { padding: 64px 20px !important; }
       .dim-grid { grid-template-columns: 1fr !important; gap: 40px !important; }
@@ -326,9 +337,11 @@
   </header>
 
   <!-- HERO SECTION -->
-  <section class="hero-section" style="background:var(--bg); min-height:100vh; padding:0 0 0 74px; display:grid; grid-template-columns:1fr 1fr; align-items:stretch; overflow:hidden;">
-    <!-- Left: text -->
-    <div class="hero-text" style="display:flex; flex-direction:column; justify-content:center; gap:clamp(48px,6vw,96px); padding:128px 64px 128px 0;">
+  <section class="hero-section" style="background:var(--bg); min-height:100vh; padding:0 0 0 74px; position:relative; display:flex; align-items:center; overflow:hidden;">
+    <!-- Background: particle canvas -->
+    <canvas id="particle-canvas" style="position:absolute; top:0; right:0; width:60%; height:100vh; display:block;"></canvas>
+    <!-- Left: text (on top of canvas) -->
+    <div class="hero-text" style="position:relative; z-index:1; display:flex; flex-direction:column; justify-content:center; gap:clamp(48px,6vw,96px); padding:128px 64px 128px 0; max-width:60%;">
       <h1 class="anim anim-1" style="font-family:'CZ Sans',sans-serif; font-size:clamp(48px,6vw,96px); font-weight:700; color:var(--text); line-height:1.0; letter-spacing:-0.03em;">Er din virksomhed klar til ESG?</h1>
       <div style="display:flex; flex-direction:column; gap:clamp(20px,2vw,36px); max-width:560px;">
         <p class="anim anim-2" style="font-family:'CZ Sans',sans-serif; font-size:clamp(16px,1.6vw,26px); font-weight:400; line-height:1.55; color:rgba(255,255,255,0.75);">ESG fylder mere og mere i krav fra kunder, investorer og myndigheder. Men hvor klar er din virksomhed egentlig til at arbejde struktureret med ESG?</p>
@@ -338,10 +351,6 @@
           Tag testen
         </button>
       </div>
-    </div>
-    <!-- Right: particle canvas -->
-    <div class="hero-img anim anim-2" style="position:relative; overflow:hidden;">
-      <canvas id="particle-canvas" style="display:block; width:100%; height:100%;"></canvas>
     </div>
   </section>
 
@@ -972,7 +981,7 @@ function renderResults() {
     threshold:   0.1,
     highlights:  1,
     brightness:  1,
-    contrast:    1,
+    contrast:    2.5,
   };
 
   const canvas = document.getElementById('particle-canvas');
@@ -986,12 +995,12 @@ function renderResults() {
   let rafId, t0 = null;
 
   function resize() {
-    const par = canvas.parentElement;
-    W = canvas.width  = par.clientWidth  || par.offsetWidth  || 720;
-    H = canvas.height = par.clientHeight || par.offsetHeight || 900;
+    const rect = canvas.getBoundingClientRect();
+    W = canvas.width  = Math.round(rect.width)  || canvas.offsetWidth  || 720;
+    H = canvas.height = Math.round(rect.height) || canvas.offsetHeight || 900;
     // Responsive particle settings: fine on mobile, varied on desktop
-    if (W < 520) { STEP = 2; sizeBase = 1.2; depthScale = 2; }
-    else          { STEP = 4; sizeBase = 2;   depthScale = 5; }
+    if (W < 520) { STEP = 2; sizeBase = 0.8; depthScale = 1; }
+    else          { STEP = 5; sizeBase = 1.5; depthScale = 2; }
     imgData = ctx.createImageData(W, H);
     buf32   = new Uint32Array(imgData.data.buffer);
   }
@@ -1018,6 +1027,8 @@ function renderResults() {
 
         let lum = (data[i] * 0.299 + data[i+1] * 0.587 + data[i+2] * 0.114) / 255;
         lum = Math.max(0, Math.min(1, (lum - 0.5) * CFG.contrast + 0.5 + (CFG.brightness - 1)));
+        // Power curve: crush darks, lift brights for high-contrast look
+        lum = Math.pow(lum, 0.65);
 
         const r0 = Math.random(), r1 = Math.random(), r2 = Math.random(), r3 = Math.random();
 
@@ -1036,7 +1047,7 @@ function renderResults() {
           push: (r1 * 0.01 + 0.01) * 0.5,
           scatterX: r2 - 0.5,
           scatterY: Math.sin(px * 0.01 * 127.1 + r2 * 311.7) * 0.5,
-          depthPh, sizePh, r3,
+          depthPh, sizePh, r3, lum,
           col,
         });
       }
@@ -1071,10 +1082,11 @@ function renderResults() {
       p.x += p.vx + p.scatterX * CFG.scatter;
       p.y += p.vy + p.scatterY * CFG.scatter;
 
-      // Size: responsive — fine on mobile, varied on desktop
+      // Size: scales with luminosity — bright particles large, dark particles tiny
       const sizeWiggle = (Math.sin(t * 0.5 + p.sizePh) + 1.0); // 0–2
       const depthBias  = p.r3 * p.r3 * CFG.depth * depthScale;
-      let sz = Math.max(1, Math.round(sizeWiggle * sizeBase + depthBias));
+      const lumScale   = 0.3 + p.lum * 0.7; // dark=0.3x, bright=1x
+      let sz = Math.max(1, Math.round(sizeWiggle * sizeBase * lumScale + depthBias * p.lum));
 
       // Write circular pixel mask into buffer
       const cx = Math.round(p.x), cy = Math.round(p.y);
@@ -1102,8 +1114,15 @@ function renderResults() {
     return { x: (cx - r.left) * (W / r.width), y: (cy - r.top) * (H / r.height) };
   }
 
-  canvas.addEventListener('mousemove',  e => { const p = toCanvas(e.clientX, e.clientY); mouse.x = p.x; mouse.y = p.y; });
-  canvas.addEventListener('mouseleave', () => { mouse.x = mouse.y = -9999; });
+  document.addEventListener('mousemove', e => {
+    const r = canvas.getBoundingClientRect();
+    if (e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom) {
+      mouse.x = (e.clientX - r.left) * (W / r.width);
+      mouse.y = (e.clientY - r.top)  * (H / r.height);
+    } else {
+      mouse.x = mouse.y = -9999;
+    }
+  });
   canvas.addEventListener('touchmove',  e => { e.preventDefault(); const t = e.touches[0]; const p = toCanvas(t.clientX, t.clientY); mouse.x = p.x; mouse.y = p.y; }, { passive: false });
   canvas.addEventListener('touchend',   () => { mouse.x = mouse.y = -9999; });
 
