@@ -1264,7 +1264,7 @@ function renderResults() {
 <!-- ============================================================
      PDF RAPPORT TEMPLATE (hidden, A4)
      ============================================================ -->
-<div id="pdf-template" style="display:none; position:fixed; left:-9999px; top:0; width:794px; background:#FFFFFF; font-family:'CZ Sans',sans-serif; color:#0F0F0F;">
+<div id="pdf-template" style="display:none; position:absolute; left:-9999px; top:0; width:794px; background:#FFFFFF; font-family:'CZ Sans',sans-serif; color:#0F0F0F;">
 
   <!-- Top accent strip -->
   <div style="height:4px; background:#56C183;"></div>
@@ -1451,19 +1451,21 @@ function generatePDF() {
     stepsEl.appendChild(row);
   });
 
-  // Vis og eksporter
+  // Vis element og vent på at browser har renderet det, før html2canvas kører
   const el = document.getElementById('pdf-template');
   el.style.display = 'block';
 
-  html2pdf().set({
-    margin: 0,
-    filename: `ESG-Modenhedsrapport-${(leadData.company || 'rapport').replace(/\s+/g,'-')}.pdf`,
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true, logging: false },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-  }).from(el).save().then(() => {
-    el.style.display = 'none';
-  });
+  setTimeout(() => {
+    html2pdf().set({
+      margin: 0,
+      filename: `ESG-Modenhedsrapport-${(leadData.company || 'rapport').replace(/\s+/g,'-')}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true, logging: false, allowTaint: true },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    }).from(el).save().then(() => {
+      el.style.display = 'none';
+    });
+  }, 300);
 }
 </script>
 
