@@ -145,7 +145,7 @@
       align-items: center;
       gap: 10px;
       padding: 14px 28px;
-      background: #313f93;
+      background: #314ae2;
       color: #ffffff;
       border: none;
       font-family: 'CZ Sans', sans-serif;
@@ -158,7 +158,7 @@
     }
     .btn:hover  { background: #3d4fb8; box-shadow: 0 4px 24px rgba(49,63,147,0.5), 0 1px 4px rgba(0,0,0,0.5); }
     .btn:active { transform: scale(0.98); }
-    .btn:focus-visible { outline: 2px solid #313f93; outline-offset: 3px; }
+    .btn:focus-visible { outline: 2px solid #314ae2; outline-offset: 3px; }
     .btn:disabled { opacity: 0.25; cursor: not-allowed; transform: none; box-shadow: none; background: var(--elevated); color: var(--muted); }
 
     .btn-outline {
@@ -179,7 +179,7 @@
     }
     .btn-outline:hover  { border-color: rgba(239,238,234,0.3); background: var(--surface); }
     .btn-outline:active { transform: scale(0.98); }
-    .btn-outline:focus-visible { outline: 2px solid #313f93; outline-offset: 3px; }
+    .btn-outline:focus-visible { outline: 2px solid #314ae2; outline-offset: 3px; }
 
     /* ===== FORM ===== */
     .field { display: flex; flex-direction: column; gap: 6px; }
@@ -815,7 +815,7 @@ function getLevel(score) {
   if (score <= 25) return { label: 'Tidlig fase',   color: '#fe6c7a', bg: 'rgba(254,108,122,0.12)' };
   if (score <= 50) return { label: 'På vej',         color: '#feed48', bg: 'rgba(254,237,72,0.10)' };
   if (score <= 75) return { label: 'Struktureret',   color: '#ebebeb', bg: 'rgba(235,235,235,0.08)' };
-  return             { label: 'Avanceret',            color: '#313f93', bg: 'rgba(49,63,147,0.20)' };
+  return             { label: 'Avanceret',            color: '#314ae2', bg: 'rgba(49,63,147,0.20)' };
 }
 
 function getDesc(score) {
@@ -829,7 +829,7 @@ function getDimLevel(s) {
   if (s <= 10) return { label: 'Ikke påbegyndt', color: 'rgba(255,255,255,0.28)' };
   if (s <= 15) return { label: 'Tidlig fase',    color: '#fe6c7a' };
   if (s <= 20) return { label: 'Under udvikling', color: '#feed48' };
-  return             { label: 'Modent niveau',    color: '#313f93' };
+  return             { label: 'Modent niveau',    color: '#314ae2' };
 }
 
 function getDimText(dimIdx, score) {
@@ -1298,7 +1298,7 @@ function renderResults() {
       </div>
 
       <!-- Right: radar -->
-      <div id="pdf-radar" style="display:flex; justify-content:center; align-items:center;"></div>
+      <div id="pdf-radar" style="display:flex; justify-content:center; align-items:center; overflow:visible;"></div>
     </div>
 
     <!-- Dimensions -->
@@ -1345,8 +1345,10 @@ function getPDFDimLevel(s) {
 
 // ===== PDF RADAR (lys version) =====
 function buildRadarSVGLight(scores) {
-  const size = 290, cx = size/2, cy = size/2, maxR = 90, n = 4, maxVal = 25;
-  const labels = DIMS.map(d => d.short);
+  // Ekstra padding rundt om chartet så labels ikke klippes
+  const pad = 52, inner = 220, size = inner + pad * 2;
+  const cx = size/2, cy = size/2, maxR = 80, n = 4, maxVal = 25;
+  const labels = ['ESG', 'Komm.', 'Org.', 'Proces'];
   function angle(i) { return (Math.PI * 2 * i / n) - Math.PI / 2; }
   function pt(i, val) { const r = (val/maxVal)*maxR; return { x: cx+r*Math.cos(angle(i)), y: cy+r*Math.sin(angle(i)) }; }
   function ptPolar(i, r) { return { x: cx+r*Math.cos(angle(i)), y: cy+r*Math.sin(angle(i)) }; }
@@ -1408,7 +1410,7 @@ function generatePDF() {
   // Badge
   const badgeEl = document.getElementById('pdf-badge');
   badgeEl.textContent = lvl.label;
-  badgeEl.style.cssText = `display:inline-block; padding:5px 16px; font-size:12px; font-weight:600; letter-spacing:0.03em; border-radius:3px; background:${lvl.bg}; color:${lvl.color}; border:1px solid ${lvl.color}40;`;
+  badgeEl.style.cssText = `display:inline-block; padding:5px 16px; font-size:12px; font-weight:600; letter-spacing:0.03em; border-radius:3px; margin-bottom:18px; background:${lvl.bg}; color:${lvl.color}; border:1px solid ${lvl.color}40;`;
 
   // Beskrivelse
   document.getElementById('pdf-desc').textContent = desc;
