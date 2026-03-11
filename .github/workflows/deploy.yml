@@ -11,6 +11,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Klargør filer til deploy
+        run: |
+          mkdir -p dist
+          cp index.html dist/
+          cp -r Brand_assets dist/ 2>/dev/null || true
+
       - name: Upload via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
@@ -19,14 +25,6 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           protocol: ftps
           port: 21
-          local-dir: ./
+          security: loose
+          local-dir: ./dist/
           server-dir: /public_html/
-          exclude: |
-            **/.git*
-            **/.git*/**
-            **/node_modules/**
-            serve.mjs
-            screenshot.mjs
-            temporary screenshots/**
-            *.csv
-            CLAUDE.md
