@@ -33,4 +33,4 @@ jobs:
             user $FTP_USERNAME $FTP_PASSWORD;
             mirror -R ./dist/ /public_html/;
             bye
-          "
+          " || true
