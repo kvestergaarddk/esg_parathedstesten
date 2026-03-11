@@ -6,8 +6,6 @@
   <title>ESG Parathedstesten — Creative ZOO</title>
   <script id="Cookiebot" src="https://consent.cookiebot.com/uc.js" data-cbid="6343bf46-12a7-4c0e-bd02-b493479de1ea" data-blockingmode="auto" type="text/javascript"></script>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
     @font-face { font-family: 'CZ Sans'; src: url('Brand_assets/Fonts/Creatice Zoo Sans/CreativeZooSans-Light.woff2') format('woff2'); font-weight: 300; font-style: normal; font-display: swap; }
     @font-face { font-family: 'CZ Sans'; src: url('Brand_assets/Fonts/Creatice Zoo Sans/CreativeZooSans-Regular.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
@@ -312,13 +310,18 @@
 
     /* ===== PRINT ===== */
     @media print {
-      body::before { display: none; }
-      .no-print { display: none !important; }
-      #view-landing, #view-quiz, #view-lead { display: none !important; }
-      #view-results { display: block !important; background: white; color: black; }
-      .prog-track { display: none; }
-      .btn, .btn-outline { display: none !important; }
-      body { background: white; }
+      * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+      body::before { display: none !important; }
+      body { background: white !important; margin: 0 !important; padding: 0 !important; }
+      #view-landing, #view-quiz, #view-lead, #view-results, .prog-track { display: none !important; }
+      #pdf-template {
+        display: block !important;
+        position: static !important;
+        left: auto !important;
+        top: auto !important;
+        width: 100% !important;
+        z-index: auto !important;
+      }
     }
   </style>
 </head>
@@ -1455,54 +1458,14 @@ function generatePDF() {
     stepsEl.appendChild(row);
   });
 
-  // Loading overlay
-  const overlay = document.createElement('div');
-  overlay.style.cssText = 'position:fixed;inset:0;z-index:9998;background:rgba(15,15,15,0.85);display:flex;align-items:center;justify-content:center;';
-  overlay.innerHTML = '<span style="color:#fff;font-family:\'CZ Sans\',sans-serif;font-size:15px;letter-spacing:0.04em;">Genererer PDF…</span>';
-  document.body.appendChild(overlay);
-
-  // Placer element synligt i viewport — html2canvas kræver dette
+  // Vis template og print via browserens native print-dialog
   const el = document.getElementById('pdf-template');
   el.style.display = 'block';
-  el.style.position = 'fixed';
-  el.style.top = '0';
-  el.style.left = '0';
-  el.style.zIndex = '9997';
-
-  const cleanup = () => {
-    el.style.display = 'none';
-    el.style.position = 'absolute';
-    el.style.left = '-9999px';
-    el.style.zIndex = '';
-    document.body.removeChild(overlay);
-  };
 
   setTimeout(() => {
-    html2canvas(el, {
-      scale: 2,
-      useCORS: true,
-      logging: false,
-      backgroundColor: '#FFFFFF',
-      width: 794,
-      windowWidth: 794,
-    }).then(canvas => {
-      const imgData = canvas.toDataURL('image/jpeg', 0.95);
-      const { jsPDF } = window.jspdf;
-      const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
-      const pageW = pdf.internal.pageSize.getWidth();
-      const pageH = pdf.internal.pageSize.getHeight();
-      const imgH = (canvas.height * pageW) / canvas.width;
-      let y = 0;
-      // Tilføj ekstra sider hvis indholdet er længere end én A4-side
-      while (y < imgH) {
-        if (y > 0) pdf.addPage();
-        pdf.addImage(imgData, 'JPEG', 0, -y, pageW, imgH);
-        y += pageH;
-      }
-      pdf.save(`ESG-Modenhedsrapport-${(leadData.company || 'rapport').replace(/\s+/g,'-')}.pdf`);
-      cleanup();
-    }).catch(() => cleanup());
-  }, 300);
+    window.print();
+    setTimeout(() => { el.style.display = 'none'; }, 500);
+  }, 100);
 }
 </script>
 
