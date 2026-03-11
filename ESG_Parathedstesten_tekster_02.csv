@@ -1,0 +1,37 @@
+﻿Kategori,Score interval,Felt,Tekst
+Overordnet niveau,0-25,Niveaunavn,Tidlig fase
+Overordnet niveau,26-50,Niveaunavn,På vej
+Overordnet niveau,51-75,Niveaunavn,Struktureret
+Overordnet niveau,76-100,Niveaunavn,Avanceret
+Beskrivelse under score,0-25,Beskrivelse,ESG-arbejdet er endnu ikke struktureret i jeres virksomhed. I har et godt udgangspunkt for at opbygge et solidt fundament fra bunden.
+Beskrivelse under score,26-50,Beskrivelse,I har taget de første skridt med ESG. Nu handler det om at systematisere indsatsen og skabe sammenhæng på tværs af dimensionerne.
+Beskrivelse under score,51-75,Beskrivelse,I arbejder aktivt og struktureret med ESG. Der er basis for at løfte indsatsen til næste niveau og integrere ESG endnu dybere i organisationen.
+Beskrivelse under score,76-100,Beskrivelse,ESG er dybt integreret i jeres organisation. I er godt positioneret til at styrke jeres position og kommunikere ESG med høj troværdighed.
+Dimension-niveau,0-10,Niveaunavn,Ikke påbegyndt
+Dimension-niveau,11-15,Niveaunavn,Tidlig fase
+Dimension-niveau,16-20,Niveaunavn,Under udvikling
+Dimension-niveau,21-25,Niveaunavn,Modent niveau
+Dimension-tekst,0-10,Tekst (brug [dimension] som pladsholder for dimensionens navn),Der er endnu ikke sat en struktureret ramme op for hvordan din organisation bliver [dimension]. Dette er et oplagt startpunkt for at skabe fundamentet.
+Dimension-tekst,11-15,Tekst (brug [dimension] som pladsholder for dimensionens navn),I er begyndt at forberede jer på at blive [dimension], men indsatsen er stadig fragmenteret og mangler en samlet struktur.
+Dimension-tekst,16-20,Tekst (brug [dimension] som pladsholder for dimensionens navn),I arbejder aktivt med at blive [dimension], men der er stadig vigtige elementer som mangler at blive implementeret fuldt ud.
+Dimension-tekst,21-25,Tekst (brug [dimension] som pladsholder for dimensionens navn),Når det handler om at blive [Dimension], er jeres virksomhed  kommet langt. Derfor har I et stærkt fundament at bygge videre på.
+Næste skridt,0-25,Titel,Byg fundamentet
+Næste skridt,0-25,Anbefaling 1,Definér en overordnet ESG-strategi og få ledelsens formelle opbakning
+Næste skridt,0-25,Anbefaling 2,Udpeg en intern ESG-ansvarlig og sæt de første konkrete mål
+Næste skridt,0-25,Anbefaling 3,Start med at kortlægge virksomhedens væsentligste miljø- og sociale påvirkninger
+Næste skridt,0-25,Anbefaling 4,Identificér de relevante datakilder og start simpel dataindsamling
+Næste skridt,26-50,Titel,Strukturér og systematisér
+Næste skridt,26-50,Anbefaling 1,Formalisér jeres ESG-mål og KPI'er og forankre dem i ledelsen
+Næste skridt,26-50,Anbefaling 2,Implementér et simpelt system til dataindsamling og -opfølgning
+Næste skridt,26-50,Anbefaling 3,Involvér medarbejderne og skab bred forståelse for ESG i organisationen
+Næste skridt,26-50,Anbefaling 4,Kommunikér jeres ESG-arbejde eksternt – også selvom det er i tidlig fase
+Næste skridt,51-75,Titel,Løft til næste niveau
+Næste skridt,51-75,Anbefaling 1,Integrer ESG fuldt ud i strategiprocessen og den løbende rapportering
+Næste skridt,51-75,Anbefaling 2,Sæt ambitiøse og målbare mål der matcher jeres modenhedsniveau
+Næste skridt,51-75,Anbefaling 3,Styrk dialogen med leverandører og øvrige stakeholders om ESG
+Næste skridt,51-75,Anbefaling 4,Overvej ekstern ESG-rapportering og dokumentér fremdriften systematisk
+Næste skridt,76-100,Titel,Stå frem som ESG-frontløber
+Næste skridt,76-100,Anbefaling 1,Sæt ambitiøse mål der rækker ud over lovkrav og branchestandarder
+Næste skridt,76-100,Anbefaling 2,Del jeres læringer og resultater eksternt og positionér jer som thought leader
+Næste skridt,76-100,Anbefaling 3,Integrer ESG i virksomhedens innovationsagenda og produktudvikling
+Næste skridt,76-100,Anbefaling 4,Engagér jer aktivt i brancheinitiaitiver og standardiseringsarbejde

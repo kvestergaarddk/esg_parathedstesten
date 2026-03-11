@@ -835,49 +835,65 @@ function getDimLevel(s) {
 
 function getDimText(dimIdx, score) {
   const n = DIMS[dimIdx].name;
-  if (score <= 10) return `Der er endnu ikke sat en struktureret ramme op for ${n.toLowerCase()}. Dette er et oplagt startpunkt for at skabe fundamentet.`;
-  if (score <= 15) return `I er begyndt at arbejde med ${n.toLowerCase()}, men indsatsen er stadig fragmenteret og mangler en samlet struktur.`;
-  if (score <= 20) return `I arbejder aktivt med ${n.toLowerCase()}, men der er stadig vigtige elementer, som mangler at blive implementeret fuldt ud.`;
-  return `${n} er veletableret i jeres virksomhed. I har et stærkt fundament at bygge videre på og videndele med omverdenen.`;
+  if (score <= 10) return `Der er endnu ikke sat en struktureret ramme op for hvordan din organisation bliver ${n.toLowerCase()}. Dette er et oplagt startpunkt for at skabe fundamentet.`;
+  if (score <= 15) return `I er begyndt at forberede jer på at blive ${n.toLowerCase()}, men indsatsen er stadig fragmenteret og mangler en samlet struktur.`;
+  if (score <= 20) return `I arbejder aktivt med at blive ${n.toLowerCase()}, men der er stadig vigtige elementer som mangler at blive implementeret fuldt ud.`;
+  return `Når det handler om at blive ${n.toLowerCase()}, er jeres virksomhed kommet langt. Derfor har I et stærkt fundament at bygge videre på.`;
 }
 
-function getSteps(score) {
-  if (score <= 25) return {
-    title: 'Byg fundamentet',
-    steps: [
-      'Definér en overordnet ESG-strategi og få ledelsens formelle opbakning',
-      'Udpeg en intern ESG-ansvarlig og sæt de første konkrete mål',
-      'Start med at kortlægge virksomhedens væsentligste miljø- og sociale påvirkninger',
-      'Identificér de relevante datakilder og start simpel dataindsamling',
-    ],
-  };
-  if (score <= 50) return {
-    title: 'Strukturér og systematisér',
-    steps: [
-      'Formalisér jeres ESG-mål og KPI\'er og forankre dem i ledelsen',
-      'Implementér et simpelt system til dataindsamling og -opfølgning',
-      'Involvér medarbejderne og skab bred forståelse for ESG i organisationen',
-      'Kommunikér jeres ESG-arbejde eksternt – også selvom det er i tidlig fase',
-    ],
-  };
-  if (score <= 75) return {
-    title: 'Løft til næste niveau',
-    steps: [
-      'Integrer ESG fuldt ud i strategiprocessen og den løbende rapportering',
-      'Sæt ambitiøse og målbare mål, der matcher jeres modenhedsniveau',
-      'Styrk dialogen med leverandører og øvrige stakeholders om ESG',
-      'Overvej ekstern ESG-rapportering og dokumentér fremdriften systematisk',
-    ],
-  };
-  return {
-    title: 'Stå frem som ESG-frontløber',
-    steps: [
-      'Sæt ambitiøse mål der rækker ud over lovkrav og branchestandarder',
-      'Del jeres læringer og resultater eksternt og positionér jer som thought leader',
-      'Integrer ESG i virksomhedens innovationsagenda og produktudvikling',
-      'Engagér jer aktivt i brancheinitiaitiver og standardiseringsarbejde',
-    ],
-  };
+// Anbefalinger pr. dimension (4 dims) × niveau (0=0-10, 1=11-15, 2=16-20, 3=21-25)
+// Hvert sæt har 2 anbefalinger
+const DIM_RECS = [
+  // Dim 0 — ESG parat
+  [
+    ['Kortlæg virksomhedens væsentligste miljø- og sociale påvirkninger som første skridt', 'Udpeg en ESG-ansvarlig og definer 3 konkrete startmål'],
+    ['Formalisér jeres ESG-program med målbare indsatser baseret på væsentlighed', 'Start systematisk dataindsamling på jeres vigtigste ESG-parametre'],
+    ['Styrk jeres ESG-datafundament og dokumentation til ekstern brug', 'Integrer ESG-mål i den løbende forretningsstrategi og budgettering'],
+    ['Overvej ekstern validering eller certificering af jeres ESG-indsats', 'Del best practices med leverandører og branchepartnere om ESG'],
+  ],
+  // Dim 1 — Kommunikationsparat
+  [
+    ['Definer en grundlæggende ESG-kommunikationsstrategi målrettet kunder og investorer', 'Identificér jeres vigtigste stakeholders og kortlæg deres ESG-forventninger'],
+    ['Strukturér ESG-kommunikationen og gør den konsistent på tværs af kanaler', 'Udarbejd et simpelt ESG-resume til brug i salgs- og kundedialoger'],
+    ['Løft kvaliteten af jeres ESG-rapportering og brug anerkendte rammer som GRI eller ESRS', 'Træn salg og kundeservice i at kommunikere ESG-værdier troværdigt'],
+    ['Positionér jer aktivt som ESG-foregangsvirksomhed i jeres branche', 'Integrer ESG-historier aktivt i brand- og marketingstrategien'],
+  ],
+  // Dim 2 — Organisationsparat
+  [
+    ['Sikr ledelsens formelle opbakning til ESG som strategisk prioritet', 'Forankr ESG-ansvar i organisationen med klare roller og ejerskab'],
+    ['Involvér medarbejderne bredt og skab fælles forståelse for ESG-dagsordenen', 'Opbyg intern ESG-kompetence gennem uddannelse og videndeling'],
+    ['Integrer ESG-hensyn i rekruttering, kultur og medarbejderudvikling', 'Etablér tværgående ESG-processer på tværs af afdelinger og funktioner'],
+    ['Styrk ESG-governance med klare beslutningsstrukturer og bestyrelsesinvolvering', 'Benchmark jeres organisation mod branchens bedste ESG-praksis'],
+  ],
+  // Dim 3 — Procesparat
+  [
+    ['Kortlæg jeres forsyningskæde og identificér de væsentligste ESG-risici', 'Begynd at dokumentere de mest kritiske processer ud fra et ESG-perspektiv'],
+    ['Implementér et simpelt system til ESG-dataindsamling og -opfølgning', 'Sæt ESG-krav ind i indkøbs- og leverandørpolitikker'],
+    ['Automatisér ESG-dataindsamling og -rapportering for at reducere manuel indsats', 'Integrer ESG-due diligence i eksisterende risikostyringsprocesser'],
+    ['Certificér relevante processer (ISO, GRI, ESRS) for øget troværdighed', 'Del proceserfaring og data med leverandører for at løfte hele værdikæden'],
+  ],
+];
+
+function getSteps(score, dimScores) {
+  const title = score <= 25 ? 'Byg fundamentet'
+              : score <= 50 ? 'Strukturér og systematisér'
+              : score <= 75 ? 'Løft til næste niveau'
+              : 'Stå frem som ESG-frontløber';
+
+  // Find de 2 lavest-scorende dimensioner
+  const sorted = dimScores
+    .map((s, i) => ({ i, s }))
+    .sort((a, b) => a.s - b.s)
+    .slice(0, 2);
+
+  const steps = [];
+  sorted.forEach(({ i, s }) => {
+    const lvlIdx = s <= 10 ? 0 : s <= 15 ? 1 : s <= 20 ? 2 : 3;
+    DIM_RECS[i][lvlIdx].forEach(rec => steps.push(rec));
+  });
+
+  const weakNames = sorted.map(({ i }) => DIMS[i].name);
+  return { title, steps, weakNames };
 }
 
 // ===== RADAR CHART =====
@@ -974,7 +990,7 @@ function renderResults() {
   const { dimScores, total } = computeScores();
   const lvl   = getLevel(total);
   const desc  = getDesc(total);
-  const steps = getSteps(total);
+  const steps = getSteps(total, dimScores);
 
   // Name + company
   document.getElementById('r-name').textContent =
@@ -1024,7 +1040,7 @@ function renderResults() {
   // Steps
   document.getElementById('r-steps-title').textContent = steps.title;
   const stepsEl = document.getElementById('r-steps');
-  stepsEl.innerHTML = '';
+  stepsEl.innerHTML = `<p style="font-size:13px; color:var(--muted); margin-bottom:20px;">Baseret på jeres to svageste områder: <strong style="color:rgba(239,238,234,0.6);">${steps.weakNames.join(' og ')}</strong></p>`;
   steps.steps.forEach((s, i) => {
     stepsEl.innerHTML += `
       <div style="display:flex; gap:16px; align-items:flex-start;">
