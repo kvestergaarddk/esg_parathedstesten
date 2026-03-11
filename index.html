@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ESG Parathedstesten — Creative ZOO</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
     @font-face { font-family: 'CZ Sans'; src: url('Brand_assets/Fonts/Creatice Zoo Sans/CreativeZooSans-Light.woff2') format('woff2'); font-weight: 300; font-style: normal; font-display: swap; }
     @font-face { font-family: 'CZ Sans'; src: url('Brand_assets/Fonts/Creatice Zoo Sans/CreativeZooSans-Regular.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
@@ -561,9 +562,9 @@
 
       <!-- Download button -->
       <div class="no-print" style="margin-bottom: 40px;">
-        <button class="btn-outline" onclick="window.print()" style="font-size:13px; padding:9px 18px;">
+        <button class="btn-outline" onclick="generatePDF()" style="font-size:13px; padding:9px 18px;">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5V1h8v4M3 10H1V5h12v5h-2M3 8h8v5H3V8z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>
-          Gem som PDF
+          Gem som PDF (download)
         </button>
       </div>
 
@@ -1261,6 +1262,212 @@ function renderResults() {
     }
   }, { passive: true });
 })();
+</script>
+
+<!-- ============================================================
+     PDF RAPPORT TEMPLATE (hidden, A4)
+     ============================================================ -->
+<div id="pdf-template" style="display:none; position:fixed; left:-9999px; top:0; width:794px; background:#FFFFFF; font-family:'CZ Sans',sans-serif; color:#0F0F0F;">
+
+  <!-- Top accent strip -->
+  <div style="height:4px; background:#56C183;"></div>
+
+  <div style="padding:36px 52px 44px; min-height:1119px; display:flex; flex-direction:column;">
+
+    <!-- Header -->
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:32px;">
+      <img src="Brand_assets/Logo_Black.svg" style="height:24px;" alt="Creative ZOO">
+      <div style="text-align:right;">
+        <div style="font-size:9px; letter-spacing:0.14em; text-transform:uppercase; color:#BBB; margin-bottom:3px;">ESG Modenhedsrapport</div>
+        <div id="pdf-date" style="font-size:11px; color:#CCC;"></div>
+      </div>
+    </div>
+
+    <!-- Meta name -->
+    <div id="pdf-name" style="font-size:13px; color:#999; margin-bottom:24px; font-weight:400; letter-spacing:0.01em;"></div>
+
+    <!-- Score + Radar -->
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:48px; align-items:center; margin-bottom:36px; padding-bottom:36px; border-bottom:1px solid #EDECEB;">
+
+      <!-- Left: score block -->
+      <div>
+        <div style="display:flex; align-items:baseline; gap:6px; margin-bottom:10px;">
+          <span id="pdf-score" style="font-family:'CZ Slab',serif; font-size:96px; line-height:1; letter-spacing:-0.05em; color:#0F0F0F;"></span>
+          <span style="font-size:22px; color:#D0CFCD; font-family:'CZ Slab',serif; font-weight:300; padding-bottom:8px;">/100</span>
+        </div>
+        <div id="pdf-badge" style="margin-bottom:20px;"></div>
+        <p id="pdf-desc" style="font-size:12.5px; color:#666; line-height:1.8;"></p>
+      </div>
+
+      <!-- Right: radar -->
+      <div id="pdf-radar" style="display:flex; justify-content:center; align-items:center;"></div>
+    </div>
+
+    <!-- Dimensions -->
+    <div style="margin-bottom:32px; padding-bottom:32px; border-bottom:1px solid #EDECEB;">
+      <p style="font-size:9px; letter-spacing:0.14em; text-transform:uppercase; color:#BBB; margin-bottom:16px;">Resultater per dimension</p>
+      <div id="pdf-dims"></div>
+    </div>
+
+    <!-- Recommendations -->
+    <div style="flex:1;">
+      <p style="font-size:9px; letter-spacing:0.14em; text-transform:uppercase; color:#BBB; margin-bottom:10px;">Anbefalede næste skridt</p>
+      <h2 id="pdf-steps-title" style="font-family:'CZ Slab',serif; font-size:26px; font-weight:400; color:#0F0F0F; margin-bottom:6px; letter-spacing:-0.03em; line-height:1.1;"></h2>
+      <p id="pdf-steps-weak" style="font-size:11.5px; color:#AAA; margin-bottom:22px;"></p>
+      <div id="pdf-steps" style="display:flex; flex-direction:column; gap:14px;"></div>
+    </div>
+
+    <!-- Footer -->
+    <div style="margin-top:36px; padding-top:18px; border-top:1px solid #EDECEB; display:flex; align-items:center; justify-content:space-between;">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <img src="Brand_assets/Logo_Black.svg" style="height:18px; opacity:0.35;" alt="Creative ZOO">
+        <span style="font-size:10px; color:#CCC;">czoo.dk</span>
+      </div>
+      <span style="font-size:11px; color:#56C183; letter-spacing:0.01em;">Vil du vide mere? Book en gratis samtale på czoo.dk</span>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ===== PDF-SAFE FARVER (lys baggrund) =====
+function getPDFLevel(score) {
+  if (score <= 25) return { label: 'Tidlig fase',  color: '#C93535', bg: '#FDF2F2' };
+  if (score <= 50) return { label: 'På vej',        color: '#B86B10', bg: '#FDF8F0' };
+  if (score <= 75) return { label: 'Struktureret',  color: '#1E9A56', bg: '#F0FBF5' };
+  return             { label: 'Avanceret',           color: '#2138C0', bg: '#F0F3FF' };
+}
+
+function getPDFDimLevel(s) {
+  if (s <= 10) return { label: 'Ikke påbegyndt', color: '#BBBBBB' };
+  if (s <= 15) return { label: 'Tidlig fase',    color: '#C93535' };
+  if (s <= 20) return { label: 'Under udvikling', color: '#B86B10' };
+  return             { label: 'Modent niveau',    color: '#1E9A56' };
+}
+
+// ===== PDF RADAR (lys version) =====
+function buildRadarSVGLight(scores) {
+  const size = 290, cx = size/2, cy = size/2, maxR = 90, n = 4, maxVal = 25;
+  const labels = DIMS.map(d => d.short);
+  function angle(i) { return (Math.PI * 2 * i / n) - Math.PI / 2; }
+  function pt(i, val) { const r = (val/maxVal)*maxR; return { x: cx+r*Math.cos(angle(i)), y: cy+r*Math.sin(angle(i)) }; }
+  function ptPolar(i, r) { return { x: cx+r*Math.cos(angle(i)), y: cy+r*Math.sin(angle(i)) }; }
+
+  const rings = [0.25,0.5,0.75,1].map((pct,ri) => {
+    const pts = Array.from({length:n},(_,i) => { const p=ptPolar(i,pct*maxR); return `${p.x},${p.y}`; }).join(' ');
+    return `<polygon points="${pts}" fill="none" stroke="rgba(0,0,0,${ri===3?'0.10':'0.05'})" stroke-width="1"/>`;
+  }).join('');
+
+  const axes = Array.from({length:n},(_,i) => {
+    const p = ptPolar(i,maxR);
+    return `<line x1="${cx}" y1="${cy}" x2="${p.x}" y2="${p.y}" stroke="rgba(0,0,0,0.07)" stroke-width="1"/>`;
+  }).join('');
+
+  const scorePoints = scores.map((s,i) => { const p=pt(i,s); return `${p.x},${p.y}`; }).join(' ');
+
+  const labelEls = Array.from({length:n},(_,i) => {
+    const a=angle(i), r=maxR+26, x=cx+r*Math.cos(a), y=cy+r*Math.sin(a);
+    const anchor = Math.abs(Math.cos(a))<0.15 ? 'middle' : (Math.cos(a)>0 ? 'start' : 'end');
+    const dy = Math.sin(a)<-0.5 ? -8 : (Math.sin(a)>0.5 ? 12 : 4);
+    const dl = getPDFDimLevel(scores[i]);
+    return `<text x="${x}" y="${y+dy}" text-anchor="${anchor}" fill="${dl.color}" font-family="'CZ Sans',sans-serif" font-size="10" font-weight="600">${labels[i]}</text>
+            <text x="${x}" y="${y+dy+13}" text-anchor="${anchor}" fill="#AAAAAA" font-family="'CZ Sans',sans-serif" font-size="9">${scores[i]}/25</text>`;
+  }).join('');
+
+  const dots = scores.map((s,i) => {
+    const p=pt(i,s), dl=getPDFDimLevel(s);
+    return `<circle cx="${p.x}" cy="${p.y}" r="4" fill="${dl.color}"/>`;
+  }).join('');
+
+  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;">
+    <defs>
+      <linearGradient id="pdfRdrFill" x1="0.5" y1="0" x2="0.5" y2="1">
+        <stop offset="0%" stop-color="#56C183" stop-opacity="0.18"/>
+        <stop offset="100%" stop-color="#56C183" stop-opacity="0.04"/>
+      </linearGradient>
+    </defs>
+    ${rings}${axes}
+    <polygon points="${scorePoints}" fill="url(#pdfRdrFill)" stroke="#56C183" stroke-width="2" stroke-linejoin="round"/>
+    <circle cx="${cx}" cy="${cy}" r="2.5" fill="rgba(0,0,0,0.15)"/>
+    ${dots}${labelEls}
+  </svg>`;
+}
+
+// ===== GENERER PDF =====
+function generatePDF() {
+  const { dimScores, total } = computeScores();
+  const lvl   = getPDFLevel(total);
+  const desc  = getDesc(total);
+  const steps = getSteps(total, dimScores);
+
+  // Header
+  document.getElementById('pdf-date').textContent = new Date().toLocaleDateString('da-DK', { day: 'numeric', month: 'long', year: 'numeric' });
+  document.getElementById('pdf-name').textContent = `${leadData.name}  ·  ${leadData.company}`;
+
+  // Score
+  document.getElementById('pdf-score').textContent = total;
+
+  // Badge
+  const badgeEl = document.getElementById('pdf-badge');
+  badgeEl.textContent = lvl.label;
+  badgeEl.style.cssText = `display:inline-block; padding:5px 16px; font-size:12px; font-weight:600; letter-spacing:0.03em; border-radius:3px; background:${lvl.bg}; color:${lvl.color}; border:1px solid ${lvl.color}40;`;
+
+  // Beskrivelse
+  document.getElementById('pdf-desc').textContent = desc;
+
+  // Radar
+  document.getElementById('pdf-radar').innerHTML = buildRadarSVGLight(dimScores);
+
+  // Dimensioner
+  const dimsEl = document.getElementById('pdf-dims');
+  dimsEl.innerHTML = '';
+  dimScores.forEach((s, i) => {
+    const dl = getPDFDimLevel(s);
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex; align-items:center; gap:16px; padding:12px 0; border-bottom:1px solid #F3F2F0;';
+    row.innerHTML = `
+      <div style="width:154px; flex-shrink:0;">
+        <div style="font-size:13px; color:#1A1A1A; font-weight:500; margin-bottom:2px;">${DIMS[i].name}</div>
+        <div style="font-size:11px; color:${dl.color}; font-weight:500;">${dl.label}</div>
+      </div>
+      <div style="flex:1; height:7px; background:#EEECEA; border-radius:4px; overflow:hidden;">
+        <div style="width:${(s/25)*100}%; height:100%; background:${dl.color}; border-radius:4px;"></div>
+      </div>
+      <div style="width:52px; text-align:right; flex-shrink:0;">
+        <span style="font-family:'CZ Slab',serif; font-size:20px; letter-spacing:-0.03em; color:${dl.color};">${s}</span>
+        <span style="font-size:10px; color:#CCCCCC;">/25</span>
+      </div>`;
+    dimsEl.appendChild(row);
+  });
+
+  // Næste skridt
+  document.getElementById('pdf-steps-title').textContent = steps.title;
+  document.getElementById('pdf-steps-weak').textContent = `Baseret på jeres to svageste områder: ${steps.weakNames.join(' og ')}`;
+  const stepsEl = document.getElementById('pdf-steps');
+  stepsEl.innerHTML = '';
+  steps.steps.forEach((s, i) => {
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex; gap:14px; align-items:flex-start;';
+    row.innerHTML = `
+      <span style="flex-shrink:0; width:24px; height:24px; background:#F3F2F0; display:inline-flex; align-items:center; justify-content:center; font-size:10px; font-weight:600; color:#999; margin-top:1px; border-radius:4px;">${i+1}</span>
+      <span style="font-size:13px; color:#444; line-height:1.72;">${s}</span>`;
+    stepsEl.appendChild(row);
+  });
+
+  // Vis og eksporter
+  const el = document.getElementById('pdf-template');
+  el.style.display = 'block';
+
+  html2pdf().set({
+    margin: 0,
+    filename: `ESG-Modenhedsrapport-${(leadData.company || 'rapport').replace(/\s+/g,'-')}.pdf`,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true, logging: false },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  }).from(el).save().then(() => {
+    el.style.display = 'none';
+  });
+}
 </script>
 
 </body>
