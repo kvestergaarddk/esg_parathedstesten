@@ -74,6 +74,9 @@
       from { opacity: 0; transform: translateY(20px); }
       to   { opacity: 1; transform: translateY(0); }
     }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
 
     /* Staggered hero text animations */
     .anim {
@@ -577,8 +580,11 @@
       </div>
 
       <button id="lead-submit-btn" type="submit" style="background:none; border:none; cursor:pointer; display:inline-flex; align-items:center; gap:14px; color:var(--text); font-family:'CZ Sans',sans-serif; font-size:18px; font-weight:400; padding:0; margin-top:16px; transition:opacity 0.15s ease; align-self:flex-start;" onmouseover="this.style.opacity='0.65'" onmouseout="this.style.opacity='1'">
-        <svg width="28" height="12" viewBox="0 0 28 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0 6H26M20 1l6 5-6 5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        Vis min ESG-rapport
+        <span id="submit-arrow">
+          <svg width="28" height="12" viewBox="0 0 28 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0 6H26M20 1l6 5-6 5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <span id="submit-spinner" style="display:none; width:18px; height:18px; border:1.5px solid rgba(255,255,255,0.2); border-top-color:var(--accent); border-radius:50%; animation:spin 0.7s linear infinite;"></span>
+        <span id="submit-label">Vis min ESG-rapport</span>
       </button>
     </form>
 
@@ -928,8 +934,11 @@ function submitLead(e) {
   leadData = { name: pendingLeadData.name, email: pendingLeadData.email };
 
   const btn = document.getElementById('lead-submit-btn');
-  btn.style.opacity = '0.4';
+  btn.style.opacity = '0.6';
   btn.style.pointerEvents = 'none';
+  document.getElementById('submit-arrow').style.display = 'none';
+  document.getElementById('submit-spinner').style.display = 'inline-block';
+  document.getElementById('submit-label').textContent = 'Bygger din rapport…';
 
   if (typeof turnstile !== 'undefined') {
     // Timeout-fallback: hvis Turnstile ikke svarer inden 6s, fortsæt alligevel
@@ -949,7 +958,7 @@ function onTurnstileVerified(token) {
 
   fetch(APPS_SCRIPT_URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'text/plain' },
     body: JSON.stringify(dataToSend),
     mode: 'no-cors',
   }).catch(err => console.warn('Sheet sync fejlede:', err));
