@@ -3,7 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow, noarchive">
   <title>ESG Parathedstesten — Creative ZOO</title>
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
   <script id="Cookiebot" src="https://consent.cookiebot.com/uc.js" data-cbid="6343bf46-12a7-4c0e-bd02-b493479de1ea" data-blockingmode="auto" type="text/javascript"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
@@ -517,24 +519,58 @@
     </p>
 
     <form id="lead-form" onsubmit="submitLead(event)" style="display: flex; flex-direction: column; gap: 18px; max-width: 440px;">
+
+      <!-- Honeypot — skjult for mennesker, bots udfylder det -->
+      <div style="position:absolute; left:-9999px; opacity:0; pointer-events:none;" aria-hidden="true">
+        <input type="text" id="l-hp" name="website" tabindex="-1" autocomplete="off">
+      </div>
+
       <div class="field">
-        <label class="label">Navn</label>
+        <label class="label">Navn <span style="color:var(--accent)">*</span></label>
         <input class="input" type="text" id="l-name" placeholder="Dit fulde navn" required autocomplete="name">
       </div>
       <div class="field">
-        <label class="label">Email</label>
+        <label class="label">Email <span style="color:var(--accent)">*</span></label>
         <input class="input" type="email" id="l-email" placeholder="din@email.dk" required autocomplete="email">
       </div>
       <div class="field">
-        <label class="label">Virksomhed</label>
-        <input class="input" type="text" id="l-company" placeholder="Virksomhedens navn" required autocomplete="organization">
+        <label class="label" style="display:flex; justify-content:space-between; align-items:center;">
+          Titel
+          <span style="font-size:11px; color:var(--muted); font-weight:400; letter-spacing:0.05em;">Valgfrit</span>
+        </label>
+        <input class="input" type="text" id="l-title" placeholder="fx Sustainability Manager" autocomplete="organization-title">
+      </div>
+      <div class="field">
+        <label class="label" style="display:flex; justify-content:space-between; align-items:center;">
+          Telefon
+          <span style="font-size:11px; color:var(--muted); font-weight:400; letter-spacing:0.05em;">Valgfrit</span>
+        </label>
+        <input class="input" type="tel" id="l-phone" placeholder="+45 00 00 00 00" autocomplete="tel">
       </div>
 
-      <p style="font-family:'CZ Sans',sans-serif; font-size: 13px; color: var(--muted); line-height: 1.7; padding-top: 8px;">
-        Dine oplysninger behandles fortroligt og deles ikke med tredjepart. Du vil kun blive kontaktet i forbindelse med din ESG-rapport.
-      </p>
+      <!-- GDPR checkboxes -->
+      <div style="display:flex; flex-direction:column; gap:14px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.07); margin-top:4px;">
+        <label style="display:flex; align-items:flex-start; gap:12px; cursor:pointer; font-family:'CZ Sans',sans-serif; font-size:13px; color:rgba(239,238,234,0.65); line-height:1.6;">
+          <input type="checkbox" id="l-consent" required style="margin-top:2px; width:16px; height:16px; min-width:16px; accent-color:var(--accent); cursor:pointer;">
+          <span>Jeg accepterer at Creative ZOO må kontakte mig og opbevare mine kontaktoplysninger i forbindelse med denne rapport. <span style="color:var(--accent)">*</span></span>
+        </label>
+        <label style="display:flex; align-items:flex-start; gap:12px; cursor:pointer; font-family:'CZ Sans',sans-serif; font-size:13px; color:rgba(239,238,234,0.65); line-height:1.6;">
+          <input type="checkbox" id="l-newsletter" style="margin-top:2px; width:16px; height:16px; min-width:16px; accent-color:var(--accent); cursor:pointer;">
+          <span>Ja tak, jeg vil gerne modtage inspiration og nyheder fra Creative ZOO om ESG og bæredygtighed.</span>
+        </label>
+      </div>
 
-      <button type="submit" style="background:none; border:none; cursor:pointer; display:inline-flex; align-items:center; gap:14px; color:var(--text); font-family:'CZ Sans',sans-serif; font-size:18px; font-weight:400; padding:0; margin-top:16px; transition:opacity 0.15s ease; align-self:flex-start;" onmouseover="this.style.opacity='0.65'" onmouseout="this.style.opacity='1'">
+      <!-- Turnstile widget (invisible) -->
+      <div class="cf-turnstile"
+           data-sitekey="0x4AAAAAACqHuLqn6Gke2yO3"
+           data-callback="onTurnstileVerified"
+           data-error-callback="onTurnstileError"
+           data-size="invisible">
+      </div>
+
+      <div id="lead-error" style="display:none; font-size:13px; color:#fe6c7a; font-family:'CZ Sans',sans-serif;"></div>
+
+      <button id="lead-submit-btn" type="submit" style="background:none; border:none; cursor:pointer; display:inline-flex; align-items:center; gap:14px; color:var(--text); font-family:'CZ Sans',sans-serif; font-size:18px; font-weight:400; padding:0; margin-top:16px; transition:opacity 0.15s ease; align-self:flex-start;" onmouseover="this.style.opacity='0.65'" onmouseout="this.style.opacity='1'">
         <svg width="28" height="12" viewBox="0 0 28 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0 6H26M20 1l6 5-6 5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         Vis min ESG-rapport
       </button>
@@ -794,15 +830,65 @@ function prevQuestion() {
 }
 
 // ===== LEAD FORM =====
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyJfGmhBQ3TfUoHrtzj9LxqSV3FpEgz-wzdGH1TKYL8Yp4_kcggbpqeDgflVXJoPUaMOg/exec';
+let pendingLeadData = null;
+
 function submitLead(e) {
   e.preventDefault();
-  leadData = {
-    name:    document.getElementById('l-name').value.trim(),
-    email:   document.getElementById('l-email').value.trim(),
-    company: document.getElementById('l-company').value.trim(),
+
+  // Honeypot: bots udfylder dette felt — afvis stille
+  if (document.getElementById('l-hp').value) return;
+
+  const errorEl = document.getElementById('lead-error');
+  errorEl.style.display = 'none';
+
+  pendingLeadData = {
+    name:               document.getElementById('l-name').value.trim(),
+    email:              document.getElementById('l-email').value.trim(),
+    title:              document.getElementById('l-title').value.trim(),
+    phone:              document.getElementById('l-phone').value.trim(),
+    consent_contact:    document.getElementById('l-consent').checked,
+    consent_newsletter: document.getElementById('l-newsletter').checked,
   };
+
+  leadData = { name: pendingLeadData.name, email: pendingLeadData.email };
+
+  // Sæt knap i loading-tilstand og kør Turnstile
+  const btn = document.getElementById('lead-submit-btn');
+  btn.style.opacity = '0.4';
+  btn.style.pointerEvents = 'none';
+
+  turnstile.execute();
+}
+
+async function onTurnstileVerified(token) {
+  if (!pendingLeadData) return;
+
+  try {
+    await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...pendingLeadData, turnstileToken: token }),
+      mode: 'no-cors',
+    });
+  } catch (err) {
+    // Vis resultater selvom sheet-kald fejler
+    console.warn('Sheet sync fejlede:', err);
+  }
+
+  turnstile.reset();
   showView('view-results');
   renderResults();
+}
+
+function onTurnstileError() {
+  const btn = document.getElementById('lead-submit-btn');
+  btn.style.opacity = '1';
+  btn.style.pointerEvents = 'auto';
+  const errorEl = document.getElementById('lead-error');
+  errorEl.textContent = 'Verifikation fejlede — prøv igen.';
+  errorEl.style.display = 'block';
+  turnstile.reset();
 }
 
 // ===== SCORES =====
