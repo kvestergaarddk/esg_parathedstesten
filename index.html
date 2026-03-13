@@ -960,7 +960,6 @@ function onTurnstileVerified(token) {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain' },
     body: JSON.stringify(dataToSend),
-    mode: 'no-cors',
   }).catch(err => console.warn('Sheet sync fejlede:', err));
 
   if (typeof turnstile !== 'undefined') turnstile.reset();
