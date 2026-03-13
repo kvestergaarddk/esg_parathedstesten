@@ -851,7 +851,7 @@ function prevQuestion() {
 }
 
 // ===== LEAD FORM =====
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzt4rcS_eM1MjW3qMAX6fei2amfiuLNZPgTwtyr_tFIocenoUMs2y1DSAjQmK651373/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwNm2kdmJJQlsZRHo8xA0deWNVlpW3FHqUGo3gvAmUNzA0UF078JVtZOMVSQAKxOjdO/exec';
 let pendingLeadData = null;
 
 function setFieldError(id, msg) {
@@ -956,6 +956,9 @@ function onTurnstileVerified(token) {
   const dataToSend = { ...pendingLeadData, turnstileToken: token };
   pendingLeadData = null; // Nulstil så eventuelle ekstra kald ignoreres
 
+  const { dimScores, total } = computeScores();
+  const level = getLevel(total).label;
+
   const params = new URLSearchParams({
     name:               dataToSend.name  || '',
     email:              dataToSend.email || '',
@@ -963,7 +966,16 @@ function onTurnstileVerified(token) {
     phone:              dataToSend.phone || '',
     consent_contact:    dataToSend.consent_contact    ? '1' : '0',
     consent_newsletter: dataToSend.consent_newsletter ? '1' : '0',
+    total,
+    level,
+    dim0: dimScores[0],
+    dim1: dimScores[1],
+    dim2: dimScores[2],
+    dim3: dimScores[3],
   });
+
+  answers.forEach((a, i) => params.set('q' + (i + 1), a || ''));
+
   fetch(APPS_SCRIPT_URL + '?' + params.toString())
     .catch(err => console.warn('Sheet sync fejlede:', err));
 
