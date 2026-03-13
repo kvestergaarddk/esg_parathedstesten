@@ -184,6 +184,8 @@
 
     /* ===== FORM ===== */
     .field { display: flex; flex-direction: column; gap: 6px; }
+    .field-error { display: none; font-family: 'CZ Sans', sans-serif; font-size: 12px; color: #fe6c7a; margin-top: 4px; }
+    .input.error { border-bottom-color: #fe6c7a; }
     .label {
       font-family: 'CZ Sans', sans-serif;
       font-size: 13px;
@@ -527,11 +529,13 @@
 
       <div class="field">
         <label class="label">Navn <span style="color:var(--accent)">*</span></label>
-        <input class="input" type="text" id="l-name" placeholder="Dit fulde navn" required autocomplete="name">
+        <input class="input" type="text" id="l-name" placeholder="Dit fulde navn" autocomplete="name" oninput="clearFieldError('l-name')">
+        <span class="field-error" id="err-name"></span>
       </div>
       <div class="field">
         <label class="label">Email <span style="color:var(--accent)">*</span></label>
-        <input class="input" type="email" id="l-email" placeholder="din@email.dk" required autocomplete="email">
+        <input class="input" type="email" id="l-email" placeholder="din@email.dk" autocomplete="email" oninput="clearFieldError('l-email')">
+        <span class="field-error" id="err-email"></span>
       </div>
       <div class="field">
         <label class="label" style="display:flex; justify-content:space-between; align-items:center;">
@@ -545,15 +549,19 @@
           Telefon
           <span style="font-size:11px; color:var(--muted); font-weight:400; letter-spacing:0.05em;">Valgfrit</span>
         </label>
-        <input class="input" type="tel" id="l-phone" placeholder="+45 00 00 00 00" autocomplete="tel">
+        <input class="input" type="tel" id="l-phone" placeholder="+45 00 00 00 00" autocomplete="tel" oninput="clearFieldError('l-phone')">
+        <span class="field-error" id="err-phone"></span>
       </div>
 
       <!-- GDPR checkboxes -->
       <div style="display:flex; flex-direction:column; gap:14px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.07); margin-top:4px;">
-        <label style="display:flex; align-items:flex-start; gap:12px; cursor:pointer; font-family:'CZ Sans',sans-serif; font-size:13px; color:rgba(239,238,234,0.65); line-height:1.6;">
-          <input type="checkbox" id="l-consent" required style="margin-top:2px; width:16px; height:16px; min-width:16px; accent-color:var(--accent); cursor:pointer;">
-          <span>Jeg accepterer at Creative ZOO må kontakte mig og opbevare mine kontaktoplysninger i forbindelse med denne rapport. <span style="color:var(--accent)">*</span></span>
-        </label>
+        <div>
+          <label id="label-consent" style="display:flex; align-items:flex-start; gap:12px; cursor:pointer; font-family:'CZ Sans',sans-serif; font-size:13px; color:rgba(239,238,234,0.65); line-height:1.6;">
+            <input type="checkbox" id="l-consent" style="margin-top:2px; width:16px; height:16px; min-width:16px; accent-color:var(--accent); cursor:pointer;" onchange="clearFieldError('consent')">
+            <span>Jeg accepterer at Creative ZOO må kontakte mig og opbevare mine kontaktoplysninger i forbindelse med denne rapport. <span style="color:var(--accent)">*</span></span>
+          </label>
+          <span class="field-error" id="err-consent" style="margin-left:28px;"></span>
+        </div>
         <label style="display:flex; align-items:flex-start; gap:12px; cursor:pointer; font-family:'CZ Sans',sans-serif; font-size:13px; color:rgba(239,238,234,0.65); line-height:1.6;">
           <input type="checkbox" id="l-newsletter" style="margin-top:2px; width:16px; height:16px; min-width:16px; accent-color:var(--accent); cursor:pointer;">
           <span>Ja tak, jeg vil gerne modtage inspiration og nyheder fra Creative ZOO om ESG og bæredygtighed.</span>
@@ -567,8 +575,6 @@
            data-error-callback="onTurnstileError"
            data-size="invisible">
       </div>
-
-      <div id="lead-error" style="display:none; font-size:13px; color:#fe6c7a; font-family:'CZ Sans',sans-serif;"></div>
 
       <button id="lead-submit-btn" type="submit" style="background:none; border:none; cursor:pointer; display:inline-flex; align-items:center; gap:14px; color:var(--text); font-family:'CZ Sans',sans-serif; font-size:18px; font-weight:400; padding:0; margin-top:16px; transition:opacity 0.15s ease; align-self:flex-start;" onmouseover="this.style.opacity='0.65'" onmouseout="this.style.opacity='1'">
         <svg width="28" height="12" viewBox="0 0 28 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0 6H26M20 1l6 5-6 5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -833,32 +839,95 @@ function prevQuestion() {
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyJfGmhBQ3TfUoHrtzj9LxqSV3FpEgz-wzdGH1TKYL8Yp4_kcggbpqeDgflVXJoPUaMOg/exec';
 let pendingLeadData = null;
 
+function setFieldError(id, msg) {
+  const input = document.getElementById(id);
+  const err   = document.getElementById('err-' + id.replace('l-', ''));
+  if (input)  input.style.borderBottomColor = '#fe6c7a';
+  if (err)  { err.textContent = msg; err.style.display = 'block'; }
+}
+
+function clearFieldError(key) {
+  const input = document.getElementById('l-' + key) || document.getElementById(key);
+  const err   = document.getElementById('err-' + key);
+  if (input) input.style.borderBottomColor = '';
+  if (err)   { err.textContent = ''; err.style.display = 'none'; }
+}
+
+function validateLeadForm() {
+  let ok = true;
+
+  const name  = document.getElementById('l-name').value.trim();
+  const email = document.getElementById('l-email').value.trim();
+  const phone = document.getElementById('l-phone').value.trim();
+
+  if (!name) {
+    setFieldError('l-name', 'Navn er påkrævet');
+    ok = false;
+  }
+
+  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  if (!email) {
+    setFieldError('l-email', 'Email er påkrævet');
+    ok = false;
+  } else if (!emailOk) {
+    setFieldError('l-email', 'Ugyldig emailadresse');
+    ok = false;
+  }
+
+  if (phone) {
+    const digits = phone.replace(/[\s\-+]/g, '').replace(/^45/, '');
+    if (!/^\d{8}$/.test(digits)) {
+      setFieldError('l-phone', 'Telefonnummer skal have 8 cifre');
+      ok = false;
+    }
+  }
+
+  if (!document.getElementById('l-consent').checked) {
+    const err = document.getElementById('err-consent');
+    err.textContent = 'Du skal acceptere for at fortsætte';
+    err.style.display = 'block';
+    document.getElementById('label-consent').style.color = 'rgba(254,108,122,0.8)';
+    ok = false;
+  }
+
+  return ok;
+}
+
 function submitLead(e) {
   e.preventDefault();
 
   // Honeypot: bots udfylder dette felt — afvis stille
   if (document.getElementById('l-hp').value) return;
 
-  const errorEl = document.getElementById('lead-error');
-  errorEl.style.display = 'none';
+  // Reset consent label farve
+  document.getElementById('label-consent').style.color = '';
+
+  if (!validateLeadForm()) return;
+
+  const phone = document.getElementById('l-phone').value.trim();
+  const digits = phone ? phone.replace(/[\s\-+]/g, '').replace(/^45/, '') : '';
 
   pendingLeadData = {
     name:               document.getElementById('l-name').value.trim(),
     email:              document.getElementById('l-email').value.trim(),
     title:              document.getElementById('l-title').value.trim(),
-    phone:              document.getElementById('l-phone').value.trim(),
-    consent_contact:    document.getElementById('l-consent').checked,
+    phone:              digits,
+    consent_contact:    true,
     consent_newsletter: document.getElementById('l-newsletter').checked,
   };
 
   leadData = { name: pendingLeadData.name, email: pendingLeadData.email };
 
-  // Sæt knap i loading-tilstand og kør Turnstile
   const btn = document.getElementById('lead-submit-btn');
   btn.style.opacity = '0.4';
   btn.style.pointerEvents = 'none';
 
-  turnstile.execute();
+  if (typeof turnstile !== 'undefined') {
+    turnstile.execute();
+  } else {
+    // Fallback: kør direkte uden Turnstile (fx localhost uden CDN)
+    onTurnstileVerified(null);
+  }
 }
 
 async function onTurnstileVerified(token) {
@@ -872,11 +941,10 @@ async function onTurnstileVerified(token) {
       mode: 'no-cors',
     });
   } catch (err) {
-    // Vis resultater selvom sheet-kald fejler
     console.warn('Sheet sync fejlede:', err);
   }
 
-  turnstile.reset();
+  if (typeof turnstile !== 'undefined') turnstile.reset();
   showView('view-results');
   renderResults();
 }
@@ -885,10 +953,10 @@ function onTurnstileError() {
   const btn = document.getElementById('lead-submit-btn');
   btn.style.opacity = '1';
   btn.style.pointerEvents = 'auto';
-  const errorEl = document.getElementById('lead-error');
-  errorEl.textContent = 'Verifikation fejlede — prøv igen.';
-  errorEl.style.display = 'block';
-  turnstile.reset();
+  const err = document.getElementById('err-consent');
+  err.textContent = 'Sikkerhedsverifikation fejlede — prøv igen.';
+  err.style.display = 'block';
+  if (typeof turnstile !== 'undefined') turnstile.reset();
 }
 
 // ===== SCORES =====
