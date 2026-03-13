@@ -935,11 +935,13 @@ function onTurnstileVerified(token) {
   if (!pendingLeadData) return;
   clearTimeout(window._turnstileTimeout);
 
-  // Send data i baggrunden — vis rapport med det samme
+  const dataToSend = { ...pendingLeadData, turnstileToken: token };
+  pendingLeadData = null; // Nulstil så eventuelle ekstra kald ignoreres
+
   fetch(APPS_SCRIPT_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ...pendingLeadData, turnstileToken: token }),
+    body: JSON.stringify(dataToSend),
     mode: 'no-cors',
   }).catch(err => console.warn('Sheet sync fejlede:', err));
 
