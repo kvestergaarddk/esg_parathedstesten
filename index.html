@@ -923,15 +923,17 @@ function submitLead(e) {
   btn.style.pointerEvents = 'none';
 
   if (typeof turnstile !== 'undefined') {
+    // Timeout-fallback: hvis Turnstile ikke svarer inden 6s, fortsæt alligevel
+    window._turnstileTimeout = setTimeout(() => onTurnstileVerified(null), 6000);
     turnstile.execute();
   } else {
-    // Fallback: kør direkte uden Turnstile (fx localhost uden CDN)
     onTurnstileVerified(null);
   }
 }
 
 async function onTurnstileVerified(token) {
   if (!pendingLeadData) return;
+  clearTimeout(window._turnstileTimeout);
 
   try {
     await fetch(APPS_SCRIPT_URL, {
