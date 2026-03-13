@@ -851,7 +851,7 @@ function prevQuestion() {
 }
 
 // ===== LEAD FORM =====
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzurd6ZjD2_J7IvFVD07pkJmx4bYStXrKwcY4X-3r4TmyWFEPzW3CrbSvPGeu0K22VJ9w/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzt4rcS_eM1MjW3qMAX6fei2amfiuLNZPgTwtyr_tFIocenoUMs2y1DSAjQmK651373/exec';
 let pendingLeadData = null;
 
 function setFieldError(id, msg) {
@@ -956,11 +956,16 @@ function onTurnstileVerified(token) {
   const dataToSend = { ...pendingLeadData, turnstileToken: token };
   pendingLeadData = null; // Nulstil så eventuelle ekstra kald ignoreres
 
-  fetch(APPS_SCRIPT_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain' },
-    body: JSON.stringify(dataToSend),
-  }).catch(err => console.warn('Sheet sync fejlede:', err));
+  const params = new URLSearchParams({
+    name:               dataToSend.name  || '',
+    email:              dataToSend.email || '',
+    title:              dataToSend.title || '',
+    phone:              dataToSend.phone || '',
+    consent_contact:    dataToSend.consent_contact    ? '1' : '0',
+    consent_newsletter: dataToSend.consent_newsletter ? '1' : '0',
+  });
+  fetch(APPS_SCRIPT_URL + '?' + params.toString())
+    .catch(err => console.warn('Sheet sync fejlede:', err));
 
   if (typeof turnstile !== 'undefined') turnstile.reset();
 
