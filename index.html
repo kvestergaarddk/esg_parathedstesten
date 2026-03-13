@@ -720,10 +720,19 @@ let answers   = new Array(20).fill(null);
 let leadData  = {};
 
 // ===== NAVIGATION =====
+const VIEW_HASHES = {
+  'view-landing': '',
+  'view-quiz':    'quiz',
+  'view-lead':    'lead',
+  'view-results': 'results',
+};
+
 function showView(id) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   window.scrollTo(0, 0);
+  const hash = VIEW_HASHES[id];
+  history.replaceState(null, '', hash ? '#' + hash : location.pathname);
 }
 
 function startQuiz() {
@@ -946,6 +955,11 @@ function onTurnstileVerified(token) {
   }).catch(err => console.warn('Sheet sync fejlede:', err));
 
   if (typeof turnstile !== 'undefined') turnstile.reset();
+
+  // Gem i sessionStorage så reload på resultatsiden virker
+  sessionStorage.setItem('esg_answers', JSON.stringify(answers));
+  sessionStorage.setItem('esg_lead', JSON.stringify(dataToSend));
+
   showView('view-results');
   renderResults();
 }
@@ -1216,6 +1230,22 @@ function renderResults() {
     }, 100);
   });
 }
+
+// ===== SESSION RESTORE =====
+(function () {
+  if (location.hash === '#results') {
+    const savedAnswers = sessionStorage.getItem('esg_answers');
+    const savedLead    = sessionStorage.getItem('esg_lead');
+    if (savedAnswers && savedLead) {
+      answers  = JSON.parse(savedAnswers);
+      leadData = JSON.parse(savedLead);
+      showView('view-results');
+      renderResults();
+      return;
+    }
+  }
+  showView('view-landing');
+})();
 </script>
 
 <script>
