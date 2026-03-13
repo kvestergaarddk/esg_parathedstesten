@@ -931,20 +931,17 @@ function submitLead(e) {
   }
 }
 
-async function onTurnstileVerified(token) {
+function onTurnstileVerified(token) {
   if (!pendingLeadData) return;
   clearTimeout(window._turnstileTimeout);
 
-  try {
-    await fetch(APPS_SCRIPT_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...pendingLeadData, turnstileToken: token }),
-      mode: 'no-cors',
-    });
-  } catch (err) {
-    console.warn('Sheet sync fejlede:', err);
-  }
+  // Send data i baggrunden — vis rapport med det samme
+  fetch(APPS_SCRIPT_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ...pendingLeadData, turnstileToken: token }),
+    mode: 'no-cors',
+  }).catch(err => console.warn('Sheet sync fejlede:', err));
 
   if (typeof turnstile !== 'undefined') turnstile.reset();
   showView('view-results');
