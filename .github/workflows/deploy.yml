@@ -15,6 +15,7 @@ jobs:
         run: |
           mkdir -p dist
           cp index.html dist/
+          cp dashboard.html dist/
           cp -r Brand_assets dist/ 2>/dev/null || true
 
       - name: Upload via FTP (lftp)
