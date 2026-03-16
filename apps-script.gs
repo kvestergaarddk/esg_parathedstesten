@@ -216,10 +216,19 @@ function buildReportEmailHtml(data) {
     + '</td></tr></table>'
     + '</td></tr>'
 
-    // CTA
-    + '<tr><td style="padding:0 0 40px 0;text-align:center;">'
-    + '<p style="font-size:14px;color:#666;line-height:1.7;margin:0 0 24px 0;">Vil du drøfte jeres resultater og næste skridt? Vi sidder klar til en uforpligtende snak.</p>'
-    + '<a href="https://czoo.dk" style="display:inline-block;background:' + BRAND_GREEN + ';color:#0F0F0F;font-size:14px;font-weight:600;letter-spacing:0.04em;text-decoration:none;padding:14px 32px;border-radius:4px;">Book en samtale</a>'
+    // Kontakt
+    + '<tr><td style="padding:0 0 40px 0;">'
+    + '<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:8px;"><tr><td style="padding:28px 32px;">'
+    + '<p style="font-size:13px;letter-spacing:0.08em;text-transform:uppercase;color:#666;margin:0 0 16px 0;">Har du spørgsmål til rapporten?</p>'
+    + '<table cellpadding="0" cellspacing="0" border="0"><tr>'
+    + '<td style="padding-right:20px;vertical-align:top;">'
+    + '<div style="font-size:16px;font-weight:600;color:#efeeea;margin-bottom:2px;">Morten Søholm</div>'
+    + '<div style="font-size:13px;color:#666;margin-bottom:12px;">Strategic Advisor, Senior Partner</div>'
+    + '<a href="tel:+4560663060" style="display:block;font-size:14px;color:#999;text-decoration:none;margin-bottom:4px;">+45 60 66 30 60</a>'
+    + '<a href="mailto:ms@czoo.dk" style="display:block;font-size:14px;color:' + BRAND_GREEN + ';text-decoration:none;">ms@czoo.dk</a>'
+    + '</td>'
+    + '</tr></table>'
+    + '</td></tr></table>'
     + '</td></tr>'
 
     // Footer
@@ -356,7 +365,33 @@ function saveToSheet(data) {
                      'Samtykke kontakt', 'Nyhedsbrev',
                      'Total', 'Niveau',
                      'ESG parat', 'Kommunikationsparat', 'Organisationsparat', 'Procesparat'];
-      for (var q = 1; q <= 20; q++) headers.push('Q' + q);
+      var questions = [
+        // Dim 0 — ESG parat
+        'Har I kortlagt virksomhedens væsentligste aftryk (miljø-, klima- og sociale forhold)?',
+        'Har I et ESG-program med konkrete og målbare indsatser baseret på væsentlighed?',
+        "Har I fastlagt mål og KPI'er, så I kan følge jeres udvikling over tid?",
+        'Har I pålidelige ESG-data, som kan dokumenteres og forklares eksternt?',
+        'Udgiver eller kan I udarbejde en ESG-rapport eller -oversigt baseret på anerkendte standarder/rammer?',
+        // Dim 1 — Kommunikationsparat
+        'Er I tilfredse med udbyttet af jeres ESG-kommunikation i dag?',
+        'Har I kortlagt jeres vigtigste målgrupper og deres forskellige behov for indsigt i jeres ESG-arbejde?',
+        'Har I fastlagt, hvad ESG-kommunikation skal bidrage med (fx salg, tillid, employer branding, relationer)?',
+        'Har I udviklet klare storylines eller hovedbudskaber for jeres væsentligste ESG-emner?',
+        'Har I udpeget og trænet relevante talspersoner til at kommunikere om jeres ESG-indsats?',
+        // Dim 2 — Organisationsparat
+        'Har I strukturerede dialoger om, hvordan ESG-arbejdet kan anvendes på tværs af organisationen?',
+        'Har I et fast og velfungerende samarbejde mellem ESG, kommunikation og marketing?',
+        'Har virksomheden en fælles ambition for, hvordan ESG skal bidrage til jeres position i markedet?',
+        'Er relevante funktioner (salg, ledelse, indkøb, marketing, kommunikation) klædt på til at forstå og anvende ESG i dialoger med eksterne?',
+        'Oplever I, at ESG-arbejdet skaber værdi og ejerskab i flere dele af organisationen – og ikke kun i ESG-teamet?',
+        // Dim 3 — Procesparat
+        'Har I klare processer for, hvordan ESG-budskaber og -påstande bliver udviklet og godkendt?',
+        'Er roller og ansvar tydeligt defineret, når der kommunikeres om ESG (hvem ejer indhold, data og godkendelse)?',
+        'Har I overblik over risici og krisepotentiale i jeres væsentligste ESG-emner?',
+        'Har I retningslinjer for, hvad I må og ikke må sige om ESG (fx ift. dokumentation og gennemsigtighed)?',
+        'Har I faste arbejdsgange, der sikrer sammenhæng mellem ESG-data, kommunikation og markedsføring på tværs af kanaler?',
+      ];
+      questions.forEach(function(q) { headers.push(q); });
       sheet.appendRow(headers);
     }
 
