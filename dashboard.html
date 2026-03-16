@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESG Parathedstesten — Dashboard</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:       #0F0F0F;
+    --surface:  #181818;
+    --elevated: #212121;
+    --border:   rgba(255,255,255,0.07);
+    --text:     #EFEEEA;
+    --muted:    rgba(239,238,234,0.45);
+    --green:    #56C183;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; min-height: 100vh; }
+
+  /* Grain */
+  body::before {
+    content: '';
+    position: fixed; inset: 0; pointer-events: none; z-index: 9999;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    opacity: 0.4;
+  }
+
+  /* Login */
+  #login-screen {
+    display: flex; align-items: center; justify-content: center;
+    min-height: 100vh; padding: 24px;
+  }
+  #login-box {
+    width: 100%; max-width: 400px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 48px 40px;
+  }
+
+  /* Dashboard */
+  #dashboard { display: none; padding: 0 0 80px; }
+
+  /* Header */
+  .dash-header {
+    border-bottom: 1px solid var(--border);
+    padding: 20px 40px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+
+  /* Cards */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 28px 32px;
+  }
+  .card-elevated {
+    background: var(--elevated);
+    border: 1px solid var(--border);
+    padding: 24px 28px;
+  }
+
+  /* Table */
+  table { width: 100%; border-collapse: collapse; }
+  thead th {
+    font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--muted); font-weight: 500;
+    padding: 12px 16px; text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  tbody tr { border-bottom: 1px solid var(--border); transition: background 0.15s; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: var(--elevated); }
+  tbody td { padding: 14px 16px; font-size: 14px; color: var(--text); }
+
+  /* Progress bar */
+  .bar-track { height: 6px; background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden; }
+  .bar-fill   { height: 6px; border-radius: 3px; transition: width 0.8s cubic-bezier(0.34,1.56,0.64,1); }
+
+  /* Badge */
+  .badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 11px; font-weight: 500; letter-spacing: 0.05em;
+    padding: 4px 10px; border-radius: 2px;
+  }
+  .badge-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+
+  /* Input */
+  .input-field {
+    width: 100%; background: transparent;
+    border: none; border-bottom: 1px solid rgba(255,255,255,0.15);
+    color: var(--text); font-family: 'Inter', sans-serif;
+    font-size: 15px; padding: 10px 0; outline: none;
+    transition: border-color 0.2s;
+  }
+  .input-field:focus { border-bottom-color: var(--green); }
+  .input-field::placeholder { color: var(--muted); }
+
+  /* Buttons */
+  .btn-primary {
+    background: var(--green); color: #0F0F0F;
+    font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600;
+    letter-spacing: 0.05em; border: none; cursor: pointer;
+    padding: 13px 28px; width: 100%;
+    transition: opacity 0.15s, transform 0.15s;
+  }
+  .btn-primary:hover { opacity: 0.88; transform: translateY(-1px); }
+  .btn-primary:active { transform: translateY(0); }
+
+  .btn-ghost {
+    background: transparent; color: var(--muted);
+    font-family: 'Inter', sans-serif; font-size: 12px;
+    letter-spacing: 0.05em; border: 1px solid var(--border); cursor: pointer;
+    padding: 8px 16px;
+    transition: color 0.15s, border-color 0.15s;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .btn-ghost:hover { color: var(--text); border-color: rgba(255,255,255,0.2); }
+
+  /* Spinner */
+  .spinner {
+    width: 20px; height: 20px;
+    border: 2px solid rgba(255,255,255,0.1);
+    border-top-color: var(--green);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Fade in */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .fade-up { animation: fadeUp 0.4s ease both; }
+
+  /* Error shake */
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    25%      { transform: translateX(-6px); }
+    75%      { transform: translateX(6px); }
+  }
+  .shake { animation: shake 0.3s ease; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════
+     LOGIN
+════════════════════════════════════════════ -->
+<div id="login-screen">
+  <div id="login-box" class="fade-up">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:40px;">
+      <img src="Brand_assets/Logo_White.svg" alt="Creative ZOO" style="height:22px;opacity:0.9;">
+      <span style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);">Dashboard</span>
+    </div>
+
+    <h1 style="font-family:'Fraunces',serif;font-size:26px;font-weight:400;letter-spacing:-0.02em;margin-bottom:8px;">ESG Parathedstesten</h1>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:36px;line-height:1.6;">Indtast adgangskode for at se besvarelserne.</p>
+
+    <form id="login-form" onsubmit="doLogin(event)">
+      <div style="margin-bottom:32px;">
+        <input type="password" id="pw-input" class="input-field" placeholder="Adgangskode" autocomplete="current-password">
+        <p id="pw-error" style="font-size:12px;color:#fe6c7a;margin-top:8px;display:none;">Forkert adgangskode</p>
+      </div>
+      <button type="submit" class="btn-primary">Log ind</button>
+    </form>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     DASHBOARD
+════════════════════════════════════════════ -->
+<div id="dashboard">
+
+  <!-- Header -->
+  <div class="dash-header">
+    <div style="display:flex;align-items:center;gap:16px;">
+      <img src="Brand_assets/Logo_White.svg" alt="Creative ZOO" style="height:20px;opacity:0.85;">
+      <span style="width:1px;height:16px;background:var(--border);display:inline-block;"></span>
+      <span style="font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);">ESG Parathedstesten — Besvarelser</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <span id="last-updated" style="font-size:12px;color:var(--muted);"></span>
+      <button class="btn-ghost" onclick="loadData()">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M10.5 6A4.5 4.5 0 1 1 6 1.5V3M6 1.5L8 3.5M6 1.5L4 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Opdater
+      </button>
+      <button class="btn-ghost" onclick="doLogout()">Log ud</button>
+    </div>
+  </div>
+
+  <!-- Loading state -->
+  <div id="loading-state" style="display:flex;align-items:center;justify-content:center;padding:120px 40px;gap:16px;">
+    <div class="spinner"></div>
+    <span style="font-size:14px;color:var(--muted);">Henter data…</span>
+  </div>
+
+  <!-- Content -->
+  <div id="dash-content" style="display:none;padding:40px;max-width:1200px;">
+
+    <!-- KPI row -->
+    <div id="kpi-row" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:32px;"></div>
+
+    <!-- Two-col: dimension overview + niveau fordeling -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:32px;">
+
+      <!-- Dimensioner -->
+      <div class="card">
+        <h2 style="font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:24px;">Dimensioner — gennemsnitsscore</h2>
+        <div id="dims-overview"></div>
+      </div>
+
+      <!-- Niveau fordeling -->
+      <div class="card">
+        <h2 style="font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:24px;">Fordeling på niveauer</h2>
+        <div id="level-dist"></div>
+      </div>
+
+    </div>
+
+    <!-- Besvarelser tabel -->
+    <div class="card" style="padding:0;">
+      <div style="padding:24px 32px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+        <h2 style="font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);">Alle besvarelser</h2>
+        <span id="response-count" style="font-size:12px;color:var(--muted);"></span>
+      </div>
+      <div style="overflow-x:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Navn</th>
+              <th>Titel</th>
+              <th>Email</th>
+              <th>Dato</th>
+              <th style="text-align:center;">Score</th>
+              <th>Niveau</th>
+              <th style="text-align:center;">ESG parat</th>
+              <th style="text-align:center;">Kommunikation</th>
+              <th style="text-align:center;">Organisation</th>
+              <th style="text-align:center;">Proces</th>
+            </tr>
+          </thead>
+          <tbody id="responses-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════
+const PASSWORD   = 'kamelesgparat2026-czoo';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyiXmVFyksQ4xDAT8RCePcqrDs-hMCQGEcAEHhK5dGuhgCJE9TaI106slbeb4vOIkBI/exec';
+
+const LEVELS = {
+  'Tidlig fase':   { color: '#fe6c7a' },
+  'På vej':        { color: '#feed48' },
+  'Struktureret':  { color: '#ebebeb' },
+  'Avanceret':     { color: '#56C183' },
+};
+
+// ═══════════════════════════════════════
+// AUTH
+// ═══════════════════════════════════════
+function doLogin(e) {
+  e.preventDefault();
+  const val = document.getElementById('pw-input').value;
+  if (val === PASSWORD) {
+    sessionStorage.setItem('dash_auth', '1');
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    loadData();
+  } else {
+    const box = document.getElementById('login-box');
+    const err = document.getElementById('pw-error');
+    err.style.display = 'block';
+    box.classList.remove('shake');
+    void box.offsetWidth;
+    box.classList.add('shake');
+    document.getElementById('pw-input').value = '';
+  }
+}
+
+function doLogout() {
+  sessionStorage.removeItem('dash_auth');
+  location.reload();
+}
+
+// Auto-login if already authed this session
+if (sessionStorage.getItem('dash_auth') === '1') {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'block';
+  loadData();
+}
+
+// ═══════════════════════════════════════
+// LOAD DATA
+// ═══════════════════════════════════════
+async function loadData() {
+  document.getElementById('loading-state').style.display = 'flex';
+  document.getElementById('dash-content').style.display = 'none';
+
+  try {
+    const res  = await fetch(APPS_SCRIPT_URL + '?action=getData');
+    const json = await res.json();
+    if (json.status !== 'ok') throw new Error('bad response');
+    renderDashboard(json.rows || []);
+  } catch (err) {
+    console.error(err);
+    document.getElementById('loading-state').innerHTML =
+      '<p style="font-size:14px;color:#fe6c7a;">Kunne ikke hente data fra Apps Script.</p>';
+  }
+}
+
+// ═══════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════
+function renderDashboard(rows) {
+  // Filter out header row if it slipped through
+  const data = rows.filter(r => r['Total'] && !isNaN(+r['Total']));
+
+  // Sort newest first
+  data.sort((a, b) => new Date(b['Tidsstempel']) - new Date(a['Tidsstempel']));
+
+  const n = data.length;
+  const avgTotal = n ? Math.round(data.reduce((s, r) => s + (+r['Total'] || 0), 0) / n) : 0;
+
+  const dimKeys  = ['ESG parat', 'Kommunikationsparat', 'Organisationsparat', 'Procesparat'];
+  const dimAvgs  = dimKeys.map(k => n ? (data.reduce((s, r) => s + (+r[k] || 0), 0) / n) : 0);
+
+  // Level counts
+  const levelCounts = { 'Tidlig fase': 0, 'På vej': 0, 'Struktureret': 0, 'Avanceret': 0 };
+  data.forEach(r => { if (levelCounts[r['Niveau']] !== undefined) levelCounts[r['Niveau']]++; });
+
+  // ── KPI row ──
+  const kpiData = [
+    { label: 'Besvarelser',       value: n,        unit: '' },
+    { label: 'Gennemsnitsscore',  value: avgTotal,  unit: '/100' },
+    { label: 'Bedste dimension',  value: dimKeys[dimAvgs.indexOf(Math.max(...dimAvgs))].split('parat')[0].trim(), unit: '' },
+    { label: 'Svageste dimension',value: dimKeys[dimAvgs.indexOf(Math.min(...dimAvgs))].split('parat')[0].trim(), unit: '' },
+  ];
+  document.getElementById('kpi-row').innerHTML = kpiData.map(k => `
+    <div class="card">
+      <div style="font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;">${k.label}</div>
+      <div style="font-family:'Fraunces',serif;font-size:36px;font-weight:400;letter-spacing:-0.03em;color:var(--text);line-height:1;">${k.value}<span style="font-size:16px;color:var(--muted);font-family:'Inter',sans-serif;font-weight:300;">${k.unit}</span></div>
+    </div>
+  `).join('');
+
+  // ── Dimensioner ──
+  const sorted = dimKeys.map((k, i) => ({ name: k, avg: dimAvgs[i] }))
+                        .sort((a, b) => b.avg - a.avg);
+
+  document.getElementById('dims-overview').innerHTML = sorted.map(d => {
+    const pct = Math.round((d.avg / 25) * 100);
+    const col = pct >= 80 ? '#56C183' : pct >= 60 ? '#ebebeb' : pct >= 40 ? '#feed48' : '#fe6c7a';
+    return `
+      <div style="margin-bottom:20px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <span style="font-size:13px;color:var(--text);">${d.name}</span>
+          <span style="font-size:13px;font-weight:600;color:${col};">${d.avg.toFixed(1)}<span style="font-size:11px;color:var(--muted);font-weight:400;">/25</span></span>
+        </div>
+        <div class="bar-track">
+          <div class="bar-fill" style="width:${pct}%;background:${col};"></div>
+        </div>
+      </div>`;
+  }).join('');
+
+  // ── Niveau fordeling ──
+  const levelOrder = ['Avanceret', 'Struktureret', 'På vej', 'Tidlig fase'];
+  document.getElementById('level-dist').innerHTML = levelOrder.map(lv => {
+    const count = levelCounts[lv] || 0;
+    const pct   = n ? Math.round((count / n) * 100) : 0;
+    const col   = LEVELS[lv]?.color || '#666';
+    return `
+      <div style="margin-bottom:20px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="width:8px;height:8px;border-radius:50%;background:${col};flex-shrink:0;"></div>
+            <span style="font-size:13px;color:var(--text);">${lv}</span>
+          </div>
+          <span style="font-size:13px;color:var(--muted);">${count} <span style="font-size:11px;">(${pct}%)</span></span>
+        </div>
+        <div class="bar-track">
+          <div class="bar-fill" style="width:${pct}%;background:${col};"></div>
+        </div>
+      </div>`;
+  }).join('');
+
+  // ── Tabel ──
+  document.getElementById('response-count').textContent = `${n} besvarelse${n !== 1 ? 'r' : ''}`;
+  document.getElementById('responses-tbody').innerHTML = data.map(r => {
+    const lvl   = r['Niveau'] || '—';
+    const col   = LEVELS[lvl]?.color || '#666';
+    const date  = r['Tidsstempel'] ? formatDate(r['Tidsstempel']) : '—';
+    const score = r['Total'] || '—';
+    return `
+      <tr>
+        <td style="font-weight:500;">${esc(r['Navn']) || '—'}</td>
+        <td style="color:var(--muted);font-size:13px;">${esc(r['Titel']) || '—'}</td>
+        <td style="color:var(--muted);font-size:13px;">${esc(r['Email']) || '—'}</td>
+        <td style="color:var(--muted);font-size:13px;white-space:nowrap;">${date}</td>
+        <td style="text-align:center;font-family:'Fraunces',serif;font-size:18px;font-weight:400;">${score}</td>
+        <td>
+          <span class="badge" style="background:${col}18;border:1px solid ${col}44;color:${col};">
+            <span class="badge-dot" style="background:${col};"></span>${lvl}
+          </span>
+        </td>
+        <td style="text-align:center;color:var(--muted);">${r['ESG parat'] || '—'}</td>
+        <td style="text-align:center;color:var(--muted);">${r['Kommunikationsparat'] || '—'}</td>
+        <td style="text-align:center;color:var(--muted);">${r['Organisationsparat'] || '—'}</td>
+        <td style="text-align:center;color:var(--muted);">${r['Procesparat'] || '—'}</td>
+      </tr>`;
+  }).join('');
+
+  // Last updated
+  document.getElementById('last-updated').textContent = 'Opdateret ' + new Date().toLocaleTimeString('da-DK', { hour: '2-digit', minute: '2-digit' });
+
+  document.getElementById('loading-state').style.display = 'none';
+  document.getElementById('dash-content').style.display = 'block';
+  document.getElementById('dash-content').classList.add('fade-up');
+
+  // Animate bars
+  requestAnimationFrame(() => {
+    document.querySelectorAll('.bar-fill').forEach(b => {
+      const w = b.style.width;
+      b.style.width = '0%';
+      requestAnimationFrame(() => { b.style.width = w; });
+    });
+  });
+}
+
+function formatDate(str) {
+  const d = new Date(str);
+  if (isNaN(d)) return str;
+  return d.toLocaleDateString('da-DK', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+function esc(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+</script>
+</body>
+</html>

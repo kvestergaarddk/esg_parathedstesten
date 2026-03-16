@@ -445,16 +445,49 @@ function sendEmails(data) {
 }
 
 // ============================================================
+// DATA ENDPOINT — returnér alle besvarelser som JSON
+// ============================================================
+
+function getAllData() {
+  var ss    = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName(SHEET_NAME);
+  if (!sheet || sheet.getLastRow() < 2) return [];
+
+  var values = sheet.getDataRange().getValues();
+  var headers = values[0];
+  var rows = [];
+  for (var i = 1; i < values.length; i++) {
+    var row = {};
+    headers.forEach(function(h, idx) {
+      var v = values[i][idx];
+      // Konvertér Date-objekter til ISO-streng
+      row[h] = v instanceof Date ? v.toISOString() : (v !== null && v !== undefined ? String(v) : '');
+    });
+    rows.push(row);
+  }
+  return rows;
+}
+
+// ============================================================
 // MAIN — GET handler
 // ============================================================
 
 function doGet(e) {
-  var data = e.parameter;
+  var params = e.parameter;
 
-  saveToSheet(data);
+  // Dashboard data endpoint
+  if (params.action === 'getData') {
+    var rows = getAllData();
+    return ContentService
+      .createTextOutput(JSON.stringify({ status: 'ok', rows: rows }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
+  // Normal besvarelse fra quiz
+  saveToSheet(params);
 
   try {
-    sendEmails(data);
+    sendEmails(params);
   } catch (err) {
     Logger.log('Email error: ' + err);
   }
