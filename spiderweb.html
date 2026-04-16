@@ -48,6 +48,15 @@
     align-items: start;
   }
 
+  @media (max-width: 720px) {
+    .page {
+      grid-template-columns: 1fr;
+    }
+    .panel {
+      position: static;
+    }
+  }
+
   .panel {
     background: #fff;
     border: 1px solid var(--border);
