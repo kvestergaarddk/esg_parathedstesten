@@ -66,15 +66,17 @@
   /* Table */
   table { width: 100%; border-collapse: collapse; }
   thead th {
-    font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+    font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase;
     color: var(--muted); font-weight: 500;
-    padding: 12px 16px; text-align: left;
+    padding: 12px 8px; text-align: left;
     border-bottom: 1px solid var(--border);
+    word-break: break-word;
   }
   tbody tr { border-bottom: 1px solid var(--border); transition: background 0.15s; }
   tbody tr:last-child { border-bottom: none; }
   tbody tr:hover { background: var(--elevated); }
-  tbody td { padding: 14px 16px; font-size: 14px; color: var(--text); }
+  tbody td { padding: 10px 8px; font-size: 14px; color: var(--text); }
+  .cell-truncate { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 0; }
 
   /* Progress bar */
   .bar-track { height: 6px; background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden; }
@@ -200,7 +202,7 @@
   </div>
 
   <!-- Content -->
-  <div id="dash-content" style="display:none;padding:40px;max-width:1200px;">
+  <div id="dash-content" style="display:none;padding:40px;">
 
     <!-- KPI row -->
     <div id="kpi-row" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:32px;"></div>
@@ -226,10 +228,32 @@
     <div class="card" style="padding:0;">
       <div style="padding:24px 32px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
         <h2 style="font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);">Alle besvarelser</h2>
-        <span id="response-count" style="font-size:12px;color:var(--muted);"></span>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div id="table-nav" style="display:none;gap:6px;">
+            <button id="table-prev" onclick="tableScroll(-1)" class="btn-ghost" style="padding:6px 10px;" aria-label="Scroll venstre">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 2L4 7l5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <button id="table-next" onclick="tableScroll(1)" class="btn-ghost" style="padding:6px 10px;" aria-label="Scroll højre">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 2l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+          </div>
+          <span id="response-count" style="font-size:12px;color:var(--muted);"></span>
+        </div>
       </div>
-      <div style="overflow-x:auto;">
-        <table>
+      <div id="table-scroll-wrap" style="overflow-x:auto;">
+        <table style="table-layout:fixed;width:100%;min-width:860px;">
+          <colgroup>
+            <col style="width:12%;"><!-- Navn -->
+            <col style="width:12%;"><!-- Titel -->
+            <col style="width:14%;"><!-- Email -->
+            <col style="width:9%;"><!-- Dato -->
+            <col style="width:7%;"><!-- Score -->
+            <col style="width:10%;"><!-- Niveau -->
+            <col style="width:9%;"><!-- ESG parat -->
+            <col style="width:9%;"><!-- Kommunikation -->
+            <col style="width:9%;"><!-- Organisation -->
+            <col style="width:9%;"><!-- Proces -->
+          </colgroup>
           <thead>
             <tr>
               <th>Navn</th>
@@ -402,9 +426,9 @@ function renderDashboard(rows) {
     const score = r['Total'] || '—';
     return `
       <tr>
-        <td style="font-weight:500;">${esc(r['Navn']) || '—'}</td>
-        <td style="color:var(--muted);font-size:13px;">${esc(r['Titel']) || '—'}</td>
-        <td style="color:var(--muted);font-size:13px;">${esc(r['Email']) || '—'}</td>
+        <td class="cell-truncate" title="${esc(r['Navn'])}" style="font-weight:500;">${esc(r['Navn']) || '—'}</td>
+        <td class="cell-truncate" title="${esc(r['Titel'])}" style="color:var(--muted);font-size:13px;">${esc(r['Titel']) || '—'}</td>
+        <td class="cell-truncate" title="${esc(r['Email'])}" style="color:var(--muted);font-size:13px;">${esc(r['Email']) || '—'}</td>
         <td style="color:var(--muted);font-size:13px;white-space:nowrap;">${date}</td>
         <td style="text-align:center;font-family:'Fraunces',serif;font-size:18px;font-weight:400;">${score}</td>
         <td>
@@ -426,6 +450,9 @@ function renderDashboard(rows) {
   document.getElementById('dash-content').style.display = 'block';
   document.getElementById('dash-content').classList.add('fade-up');
 
+  // Opdater tabel-navigation
+  requestAnimationFrame(updateTableNav);
+
   // Animate bars
   requestAnimationFrame(() => {
     document.querySelectorAll('.bar-fill').forEach(b => {
@@ -446,6 +473,38 @@ function esc(s) {
   if (!s) return '';
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
+
+// ── Tabel navigation (vises når browseren er for smal) ──
+function tableScroll(dir) {
+  const wrap = document.getElementById('table-scroll-wrap');
+  if (!wrap) return;
+  wrap.scrollBy({ left: dir * 240, behavior: 'smooth' });
+}
+
+function updateTableNav() {
+  const wrap = document.getElementById('table-scroll-wrap');
+  const nav  = document.getElementById('table-nav');
+  const prev = document.getElementById('table-prev');
+  const next = document.getElementById('table-next');
+  if (!wrap || !nav) return;
+
+  const overflowing = wrap.scrollWidth > wrap.clientWidth + 4;
+  nav.style.display = overflowing ? 'flex' : 'none';
+
+  if (overflowing) {
+    prev.disabled = wrap.scrollLeft <= 0;
+    prev.style.opacity = wrap.scrollLeft <= 0 ? '0.3' : '1';
+    next.disabled = wrap.scrollLeft >= wrap.scrollWidth - wrap.clientWidth - 4;
+    next.style.opacity = next.disabled ? '0.3' : '1';
+  }
+}
+
+// Kør ved resize og scroll
+window.addEventListener('resize', updateTableNav);
+document.addEventListener('DOMContentLoaded', () => {
+  const wrap = document.getElementById('table-scroll-wrap');
+  if (wrap) wrap.addEventListener('scroll', updateTableNav);
+});
 </script>
 </body>
 </html>
