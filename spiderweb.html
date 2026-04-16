@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESG Parathedstesten — Spiderweb</title>
+<style>
+  @font-face {
+    font-family: 'CZSans';
+    src: url('/Brand_assets/Fonts/CreativeZooSans-Bold.woff2') format('woff2');
+    font-weight: 700;
+  }
+  @font-face {
+    font-family: 'CZSans';
+    src: url('/Brand_assets/Fonts/CreativeZooSans-Regular.woff2') format('woff2');
+    font-weight: 400;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --blue: #314ae2;
+    --blue-light: #eef1fd;
+    --blue-mid: #c5cef7;
+    --text: #1a1a2e;
+    --muted: #6b7280;
+    --border: #dde2f8;
+    --radius: 10px;
+  }
+
+  body {
+    background: #f7f8ff;
+    font-family: 'CZSans', system-ui, sans-serif;
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 40px 24px;
+  }
+
+  .page {
+    display: grid;
+    grid-template-columns: 360px 1fr;
+    gap: 32px;
+    width: 100%;
+    max-width: 1000px;
+    align-items: start;
+  }
+
+  .panel {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    position: sticky;
+    top: 40px;
+  }
+
+  .panel-title {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--blue);
+    margin-bottom: 20px;
+  }
+
+  .resp-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .resp-table th {
+    color: var(--muted);
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    padding: 0 4px 8px;
+    text-align: center;
+    border-bottom: 1.5px solid var(--border);
+  }
+  .resp-table th:first-child { text-align: left; padding-left: 0; }
+  .resp-table td { padding: 5px 4px; vertical-align: middle; }
+  .resp-table td:first-child { padding-left: 0; }
+
+  .resp-label { font-size: 11px; color: var(--muted); white-space: nowrap; }
+
+  .score-input {
+    width: 46px;
+    padding: 5px 6px;
+    border: 1.5px solid var(--border);
+    border-radius: 6px;
+    font-family: 'CZSans', system-ui, sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    text-align: center;
+    background: #fff;
+    display: block;
+    margin: 0 auto;
+  }
+  .score-input:focus { outline: none; border-color: var(--blue); background: var(--blue-light); }
+  .score-input::-webkit-inner-spin-button,
+  .score-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+
+  .remove-btn {
+    background: none; border: none; cursor: pointer;
+    color: var(--blue-mid); font-size: 16px; line-height: 1;
+    padding: 4px 6px; border-radius: 4px;
+  }
+  .remove-btn:hover { color: #e54040; background: #fef2f2; }
+
+  .add-btn {
+    width: 100%; margin-top: 14px; padding: 9px 16px;
+    background: var(--blue-light); color: var(--blue);
+    border: 1.5px dashed var(--blue-mid); border-radius: var(--radius);
+    font-family: 'CZSans', system-ui, sans-serif;
+    font-size: 12px; font-weight: 700; letter-spacing: .04em; cursor: pointer;
+  }
+  .add-btn:hover { background: var(--blue-mid); }
+
+  .divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+
+  .avg-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 20px; }
+  .avg-card { background: var(--blue-light); border-radius: 8px; padding: 8px 4px; text-align: center; }
+  .avg-card-label { font-size: 9px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--blue); line-height: 1.3; margin-bottom: 4px; }
+  .avg-card-value { font-size: 18px; font-weight: 700; color: var(--blue); }
+
+  .download-btn {
+    width: 100%; padding: 11px 16px;
+    background: var(--blue); color: #fff; border: none; border-radius: var(--radius);
+    font-family: 'CZSans', system-ui, sans-serif;
+    font-size: 13px; font-weight: 700; letter-spacing: .04em; cursor: pointer;
+  }
+  .download-btn:hover { opacity: .88; }
+  .download-btn:active { transform: scale(.98); }
+
+  .chart-wrap { aspect-ratio: 1; width: 100%; max-width: 560px; margin: 0 auto; }
+  #spiderweb { width: 100%; height: 100%; overflow: visible; }
+
+  /* Radar styles */
+  .radar-individual {
+    fill: none;
+    stroke: #314ae2;
+    stroke-width: 0.55;
+    stroke-linejoin: round;
+    stroke-opacity: 0.35;
+  }
+  .radar-average {
+    fill: #314ae2;
+    fill-opacity: 0.14;
+    stroke: #314ae2;
+    stroke-width: 1.5;
+    stroke-linejoin: round;
+  }
+  .radar-dot { fill: #314ae2; }
+  .radar-axis {
+    stroke: #314ae2;
+    stroke-width: 0.3;
+    stroke-dasharray: 2 2;
+    stroke-opacity: 0.3;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- VENSTRE: KONTROLLER -->
+  <div class="panel">
+    <div class="panel-title">Deltagere</div>
+    <table class="resp-table" id="respTable">
+      <thead>
+        <tr>
+          <th></th>
+          <th>ESG</th>
+          <th>Kom.</th>
+          <th>Org.</th>
+          <th>Proc.</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="respBody"></tbody>
+    </table>
+    <button class="add-btn" onclick="addRespondent()">+ Tilføj deltager</button>
+
+    <hr class="divider">
+    <div class="panel-title" style="margin-bottom:12px">Gennemsnit</div>
+    <div class="avg-row">
+      <div class="avg-card"><div class="avg-card-label">ESG<br>Parat</div><div class="avg-card-value" id="avg-top">—</div></div>
+      <div class="avg-card"><div class="avg-card-label">Komm.<br>parat</div><div class="avg-card-value" id="avg-right">—</div></div>
+      <div class="avg-card"><div class="avg-card-label">Org.<br>parat</div><div class="avg-card-value" id="avg-bottom">—</div></div>
+      <div class="avg-card"><div class="avg-card-label">Proces<br>parat</div><div class="avg-card-value" id="avg-left">—</div></div>
+    </div>
+    <button class="download-btn" onclick="downloadPNG()">↓ Download som PNG</button>
+  </div>
+
+  <!-- HØJRE: DIAGRAM -->
+  <div class="chart-wrap">
+
+    <!--
+      SVG brugt 1:1 fra brand_assets/ESGPARAT_Spiderweb.svg
+      Eneste tilføjelse: <g id="radarLayer"> sidst i SVG'en
+    -->
+    <svg id="spiderweb" viewBox="0 0 375.26 375.26" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <style>
+          .cls-1 { fill: none; stroke: #314ae2; stroke-miterlimit: 10; stroke-width: .4px; }
+          .cls-2 { fill: #fff; }
+          .cls-3 { fill: #314ae2; }
+          .radar-individual { fill: none; stroke: #314ae2; stroke-width: 0.55; stroke-linejoin: round; stroke-opacity: 0.35; }
+          .radar-average { fill: #314ae2; fill-opacity: 0.14; stroke: #314ae2; stroke-width: 1.5; stroke-linejoin: round; }
+          .radar-dot { fill: #314ae2; }
+          .radar-axis { stroke: #314ae2; stroke-width: 0.3; stroke-dasharray: 2 2; stroke-opacity: 0.3; }
+        </style>
+      </defs>
+      <g id="Circles">
+        <g>
+          <path class="cls-2" d="M89.16,92.57l-31.01-31.01c-67.59,69.4-68.18,180.08-1.8,250.23l31.01-31.01c-49.3-53.03-48.69-135.9,1.8-188.2Z"/>
+          <path class="cls-2" d="M287.59,281.11l31.01,31.01c66.81-70.24,66.21-181.4-1.81-250.9l-31.01,31.01c50.93,52.39,51.53,135.75,1.81,188.87Z"/>
+          <path class="cls-2" d="M280.78,87.34l31.01-31.01c-69.62-65.88-179.17-65.78-248.66.32l31.01,31.01c52.37-49.02,134.13-49.13,186.63-.32Z"/>
+          <path class="cls-2" d="M92.25,285.78l-31.01,31.01c70.01,68.53,182.32,68.63,252.46.32l-31.01-31.01c-53.04,51.21-137.53,51.11-190.43-.32Z"/>
+          <path class="cls-2" d="M282.64,276.17c46.99-50.39,46.39-129.31-1.81-178.97-.46-.47-.89-.96-1.35-1.42-1.2-1.2-2.43-2.34-3.66-3.47-49.77-46.08-127.09-45.97-176.73.32-1.11,1.04-2.23,2.07-3.32,3.16-.57.57-1.11,1.17-1.67,1.76-47.77,49.57-48.38,128-1.8,178.3,1.14,1.23,2.28,2.46,3.47,3.66.46.46.95.89,1.42,1.35,50.18,48.7,130.22,48.8,180.53.32.58-.56,1.18-1.09,1.76-1.67,1.09-1.09,2.12-2.21,3.16-3.32Z"/>
+          <path class="cls-3" d="M57.34,317.92c-1.2-1.2-2.32-2.44-3.47-3.66l-2.47,2.47c1.16,1.22,2.28,2.46,3.47,3.66.46.46.95.89,1.42,1.35l2.47-2.47c-.47-.46-.96-.89-1.42-1.35Z"/>
+          <path class="cls-3" d="M59.81,315.44c-1.2-1.2-2.32-2.44-3.47-3.66l-2.48,2.48c1.16,1.22,2.28,2.46,3.47,3.66.46.46.95.89,1.42,1.35l2.48-2.48c-.47-.46-.96-.89-1.42-1.35Z"/>
+          <path class="cls-3" d="M323.55,317.07c69.53-72.97,68.94-188.57-1.81-260.8-.46-.47-.89-.96-1.35-1.42-1.2-1.2-2.44-2.32-3.66-3.47-72.36-68.61-186.34-68.5-258.56.32-1.11,1.05-2.23,2.07-3.32,3.16-.57.57-1.1,1.18-1.67,1.76-70.32,72.14-70.91,187.25-1.8,260.13l2.47-2.47,2.48-2.48C-10.04,241.64-9.45,130.97,58.14,61.56l31.01,31.01c-50.5,52.3-51.1,135.17-1.8,188.2l-31.01,31.01c1.16,1.22,2.28,2.46,3.47,3.66.46.46.95.89,1.42,1.35l31.01-31.01c52.91,51.43,137.4,51.53,190.43.32l31.01,31.01c-70.14,68.31-182.45,68.2-252.46-.32l-2.48,2.48-2.47,2.47c72.74,71.25,189.49,71.36,262.36.32.58-.57,1.18-1.09,1.76-1.67,1.09-1.09,2.1-2.21,3.16-3.32ZM97.2,280.83c-.47-.46-.96-.89-1.42-1.35-1.2-1.2-2.34-2.43-3.47-3.66-46.57-50.29-45.96-128.73,1.8-178.3.56-.58,1.09-1.18,1.67-1.76,1.09-1.09,2.21-2.12,3.32-3.16,49.64-46.29,126.97-46.4,176.73-.32,1.23,1.14,2.46,2.28,3.66,3.47.46.46.89.95,1.35,1.42,48.2,49.66,48.8,128.58,1.81,178.97-1.04,1.11-2.07,2.23-3.16,3.32-.57.57-1.17,1.11-1.76,1.67-50.31,48.48-130.36,48.38-180.53-.32ZM311.79,56.33l-31.01,31.01c-52.5-48.81-134.26-48.7-186.63.32l-31.01-31.01c69.5-66.1,179.04-66.2,248.66-.32ZM287.59,281.11c49.72-53.12,49.12-136.48-1.81-188.87l31.01-31.01c68.02,69.49,68.61,180.66,1.81,250.9l-31.01-31.01Z"/>
+          <path class="cls-3" d="M140.59,31.65l7.71-2.22.68,2.35-5.19,1.5.57,1.97,3.12-.56.5,1.75-2.93,1.19.57,1.98,5.19-1.49.67,2.35-7.71,2.23-3.18-11.04Z"/>
+          <path class="cls-3" d="M151.6,36.46l2.56-.57c.17.85,1.19,1.35,2.26,1.11,1.02-.23,1.72-1.02,1.56-1.76-.34-1.55-6.01.9-6.86-2.95-.44-1.99,1.06-4.02,3.33-4.53,2.23-.49,4.42.72,4.86,2.71l-2.53.56c-.14-.66-.93-1.02-1.8-.83-.88.2-1.47.87-1.33,1.53.34,1.54,6.03-1.04,6.9,2.94.48,2.09-1.12,4.25-3.57,4.8-2.48.55-4.9-.79-5.38-3.01Z"/>
+          <path class="cls-3" d="M162.02,32.22c-.45-3.27,1.93-6.33,5.02-6.77,2.13-.3,4.23.69,5.53,2.17l-.49,1.33-1.64.23c-.69-.79-1.89-1.31-3.03-1.15-1.68.24-2.97,1.98-2.71,3.83.26,1.82,1.93,3.11,3.76,2.86,1.2-.17,2.2-.96,2.5-2.03l-3.53.5-.34-2.42,5.16-.73,1.67,2.19c-.37,2.56-2.39,4.7-5.09,5.09-3.29.46-6.35-1.83-6.79-5.1Z"/>
+          <path class="cls-3" d="M189.5,28.23c.08,2.3-1.73,4.24-4.01,4.32l-2.26.07.1,3.13-2.62.09-.38-11.47,4.82-.16c2.31-.07,4.28,1.73,4.35,4.02ZM186.78,28.32c-.03-1.03-.69-1.7-1.47-1.67l-2.28.07.11,3.46,2.28-.08c.77-.02,1.39-.75,1.35-1.78Z"/>
+          <path class="cls-3" d="M200.57,34.45l-.05,1.46-2.23-.08-.75-2.44-.73.3-3.38-.12-.71-.35-.92,2.38-2.23-.08.05-1.46,4.21-9.89,3.25.11,3.5,10.16ZM196.84,31.21l-1.47-4.87-1.81,4.76,3.28.12Z"/>
+          <path class="cls-3" d="M211.21,35.6l-.16,1.45-2.14-.23-1.89-3.36-2.09-.23-.34,3.11-2.61-.28,1.25-11.41,4.79.53c2.3.25,3.99,2.32,3.73,4.6-.16,1.45-1.05,2.66-2.27,3.28l1.71,2.55ZM205.2,30.79l2.27.25c.76.08,1.48-.55,1.59-1.58.12-1.03-.44-1.78-1.21-1.87l-2.27-.25-.38,3.44Z"/>
+          <path class="cls-3" d="M223.21,37.76l-.27,1.44-2.2-.41-.38-2.53-.77.19-3.33-.62-.65-.45-1.27,2.22-2.2-.41.27-1.44,5.64-9.15,3.19.6,1.95,10.57ZM220,34l-.72-5.03-2.5,4.43,3.23.6Z"/>
+          <path class="cls-3" d="M233.81,32.31l-3.17-.47-2.23,8.77-2.55-.65,2.23-8.77-3.01-1.1.53-2.05,8.72,2.22-.52,2.05Z"/>
+          <path class="cls-3" d="M312.97,97.21l-1.15.88-1.3-1.69,1.44-5.54-1.31-.14-2.83,2.17-1.6-2.08,9.12-7.01,1.6,2.08-3.45,2.65,5.93.54,1.23,1.6-1.19.91-5.05-.56-1.45,6.17Z"/>
+          <path class="cls-3" d="M317.03,95.41c2.77-1.8,6.5-1.01,8.3,1.73,1.8,2.73,1.02,6.46-1.73,8.28-2.75,1.82-6.47,1.05-8.28-1.71-1.82-2.77-1.06-6.51,1.71-8.31ZM322.13,103.18c1.55-1.04,2.02-3.09,1.02-4.61-1-1.52-3.07-1.93-4.63-.9-1.57,1.02-2.02,3.09-1.01,4.63,1.01,1.53,3.07,1.93,4.63.89Z"/>
+          <path class="cls-3" d="M335.74,115.78l-10.16,5.39-1.23-2.32,6.43-3.37-5.9.06-.83-1.57,3.36-4.85-6.4,3.43-1.23-2.33,10.16-5.39,1.29,2.44-4.18,6.1,7.4-.04,1.29,2.44Z"/>
+          <path class="cls-3" d="M341.87,130.15l-10.62,4.4-1.01-2.43,6.72-2.75-5.88-.5-.68-1.64,3.8-4.51-6.69,2.81-1.01-2.43,10.62-4.41,1.06,2.55-4.74,5.68,7.37.66,1.06,2.55Z"/>
+          <path class="cls-3" d="M336.66,135.15l6.26-1.97.79,2.5-6.26,1.97c-1.36.43-2.11,1.82-1.68,3.18.42,1.35,1.83,2.05,3.19,1.61l6.26-1.97.79,2.51-6.26,1.97c-2.7.87-5.62-.64-6.47-3.33-.85-2.71.67-5.63,3.38-6.46Z"/>
+          <path class="cls-3" d="M349.24,156.4l-11.22,2.55-.58-2.55,6.16-6.96-7.34,1.75-.58-2.57,11.23-2.55.58,2.55-6.15,6.97,7.34-1.75.58,2.56Z"/>
+          <path class="cls-3" d="M349.7,159.38l.43,2.59-11.34,1.88-.43-2.59,11.34-1.88Z"/>
+          <path class="cls-3" d="M341.68,175.26l-1.44.16-.24-2.12,4.1-4-1.05-.79-3.54.4-.29-2.61,11.43-1.28.29,2.61-4.33.48,4.79,3.53.22,2-1.48.17-4.03-3.09-4.44,4.53Z"/>
+          <path class="cls-3" d="M342.24,187.13l-1.46.06-.09-2.23,2.38-.93-.36-.71-.14-3.38.3-.73-2.44-.74-.09-2.23,1.46-.06,10.17,3.45.13,3.24-9.86,4.26ZM345.18,183.17l4.74-1.83-4.87-1.45.13,3.28Z"/>
+          <path class="cls-3" d="M349.89,196.18l-.25-3.19-9.05-.22.06-2.63,9.05.22.41-3.18,2.12.05-.22,9-2.12-.05Z"/>
+          <path class="cls-3" d="M351.8,198.71l-.2,2.62-11.47-.89.2-2.62,11.47.89Z"/>
+          <path class="cls-3" d="M345.77,203.09c3.26.46,5.57,3.5,5.13,6.76-.44,3.23-3.47,5.54-6.74,5.11-3.27-.43-5.57-3.46-5.13-6.73.45-3.29,3.48-5.6,6.75-5.14ZM344.51,212.3c1.86.24,3.55-1.01,3.8-2.81.24-1.81-1.05-3.47-2.91-3.72-1.85-.25-3.55,1.01-3.79,2.83-.25,1.82,1.05,3.47,2.91,3.71Z"/>
+          <path class="cls-3" d="M346.96,228.9l-11.21-2.52.57-2.54,8.54-3.63-7.37-1.57.58-2.56,11.21,2.52-.57,2.55-8.54,3.63,7.37,1.57-.58,2.56Z"/>
+          <path class="cls-3" d="M338.91,229.32l-.77,2.51c-.83-.27-1.76.37-2.09,1.42-.31,1,.03,2,.76,2.23,1.53.47,2.19-5.67,5.96-4.5,1.94.59,2.97,2.91,2.28,5.14-.67,2.18-2.81,3.48-4.76,2.88l.76-2.48c.64.19,1.35-.31,1.61-1.16.27-.86-.02-1.71-.67-1.91-1.5-.46-2.08,5.75-5.97,4.54-2.06-.62-3.14-3.08-2.4-5.48.75-2.43,3.11-3.87,5.28-3.19Z"/>
+          <path class="cls-3" d="M335.49,249.8c-2.15-.83-3.24-3.26-2.41-5.39l.82-2.12-2.93-1.13.95-2.45,10.74,4.15-1.74,4.51c-.83,2.16-3.27,3.27-5.42,2.44ZM336.48,247.25c.97.38,1.84.02,2.12-.69l.82-2.13-3.24-1.25-.82,2.13c-.28.72.15,1.57,1.12,1.94Z"/>
+          <path class="cls-3" d="M325.45,257.53l-1.32-.62.94-2.03,2.54.26v-.8s1.43-3.07,1.43-3.07l.6-.52-1.84-1.78.94-2.03,1.33.62,7.48,7.73-1.37,2.95-10.73-.73ZM329.89,255.35l5.06.54-3.67-3.52-1.39,2.98Z"/>
+          <path class="cls-3" d="M320.26,266.94l-1.28-.71,1.04-1.88,3.83-.44,1.02-1.84-2.75-1.52,1.28-2.3,10.05,5.57-2.34,4.22c-1.13,2.02-3.68,2.78-5.7,1.67-1.28-.71-2.04-2-2.15-3.37l-3.02.6ZM327.02,263.26l-1.11,2c-.37.67-.07,1.58.84,2.08.91.5,1.82.27,2.19-.4l1.11-1.99-3.03-1.68Z"/>
+          <path class="cls-3" d="M313.61,277.16l-1.22-.8,1.23-1.87,2.48.63.12-.78,1.86-2.83.67-.42-1.56-2.03,1.23-1.86,1.22.8,6.26,8.74-1.79,2.72-10.5-2.3ZM318.31,275.65l4.92,1.28-3.11-4.02-1.81,2.74Z"/>
+          <path class="cls-3" d="M314.56,288.99l1.65-2.74-7.22-5.44,1.58-2.1,7.22,5.44,2.18-2.35,1.69,1.27-5.41,7.18-1.69-1.28Z"/>
+          <path class="cls-3" d="M94.84,316.7c1.83-2.74,5.58-3.5,8.32-1.7,2.72,1.79,3.49,5.51,1.68,8.27-1.8,2.76-5.54,3.52-8.29,1.72-2.77-1.82-3.54-5.55-1.71-8.29ZM102.59,321.8c1.02-1.57.64-3.63-.89-4.63-1.52-1-3.58-.55-4.62,1.01-1.03,1.55-.63,3.62.9,4.63s3.59.55,4.6-1.02Z"/>
+          <path class="cls-3" d="M112.67,332.54l-.71,1.28-1.88-1.04-.44-3.83-1.84-1.01-1.52,2.75-2.29-1.27,5.55-10.07,4.22,2.33c2.02,1.12,2.78,3.68,1.67,5.69-.71,1.28-1.99,2.05-3.36,2.16l.6,3.01ZM108.99,325.79l1.99,1.1c.67.37,1.58.06,2.07-.85.5-.9.28-1.82-.4-2.19l-1.99-1.1-1.67,3.03Z"/>
+          <path class="cls-3" d="M116.29,329.59c1.38-3,5.01-4.31,7.85-3.03,1.96.88,3.19,2.85,3.5,4.8l-1.13.86-1.51-.68c-.16-1.05-.9-2.12-1.94-2.59-1.54-.7-3.56.08-4.34,1.79-.76,1.68-.04,3.66,1.63,4.43,1.11.5,2.37.37,3.2-.38l-3.24-1.47,1.01-2.23,4.73,2.15.23,2.74c-1.68,1.96-4.53,2.69-7,1.57-3.02-1.37-4.37-4.94-2.99-7.95Z"/>
+          <path class="cls-3" d="M136.78,342.57l-.5,1.38-2.1-.76.03-2.56-.79.06-3.18-1.15-.57-.55-1.61,1.98-2.1-.76.5-1.37,7.03-8.12,3.06,1.1.22,10.74ZM134.23,338.35l.09-5.08-3.18,3.96,3.09,1.12Z"/>
+          <path class="cls-3" d="M151.63,336.34l-3.05,11.08-2.51-.69-3.2-8.7-1.92,7.29-2.52-.7,3.05-11.08,2.51.69,3.21,8.7,1.92-7.29,2.52.7Z"/>
+          <path class="cls-3" d="M153.93,336.79l2.56.56-2.44,11.24-2.56-.56,2.44-11.24Z"/>
+          <path class="cls-3" d="M157.05,345.32l2.59.42c-.16.86.6,1.69,1.68,1.87,1.03.17,1.97-.31,2.1-1.06.26-1.57-5.9-1.39-5.26-5.28.33-2.01,2.47-3.34,4.76-2.97,2.25.36,3.82,2.3,3.5,4.31l-2.55-.41c.11-.67-.49-1.3-1.36-1.43-.89-.15-1.68.26-1.79.92-.25,1.56,5.97,1.27,5.3,5.28-.33,2.13-2.62,3.54-5.09,3.14-2.5-.41-4.25-2.55-3.87-4.79Z"/>
+          <path class="cls-3" d="M178.35,350.36l-.13,1.46-2.22-.2-.62-2.48-.75.27-3.36-.29-.69-.39-1.04,2.33-2.22-.2.13-1.46,4.72-9.67,3.23.29,2.95,10.34ZM174.81,346.93l-1.21-4.95-2.06,4.66,3.27.29Z"/>
+          <path class="cls-3" d="M187.9,342.65l-3.19.25-.22,9.06-2.62-.06.22-9.06-3.17-.4.05-2.12,8.98.21-.05,2.12Z"/>
+          <path class="cls-3" d="M189.67,340.47l2.62-.06.28,11.49-2.62.07-.28-11.49Z"/>
+          <path class="cls-3" d="M194.59,346.17c-.27-3.29,2.19-6.19,5.46-6.47,3.25-.27,6.16,2.19,6.47,5.47.3,3.28-2.14,6.19-5.43,6.47-3.3.28-6.23-2.18-6.5-5.47ZM203.83,345.4c-.18-1.87-1.76-3.25-3.57-3.1-1.82.15-3.15,1.78-2.99,3.64.16,1.87,1.76,3.25,3.59,3.1,1.83-.15,3.15-1.78,2.98-3.64Z"/>
+          <path class="cls-3" d="M218.17,337.39l1.94,11.33-2.56.44-6.59-6.51,1.35,7.41-2.58.45-1.94-11.32,2.56-.44,6.59,6.51-1.35-7.41,2.58-.45Z"/>
+          <path class="cls-3" d="M221.71,344.44l2.54-.64c.2.85,1.23,1.32,2.29,1.05,1.02-.26,1.69-1.07,1.51-1.79-.38-1.54-5.97,1.05-6.93-2.76-.49-1.97.95-4.04,3.21-4.61,2.21-.55,4.43.6,4.92,2.57l-2.51.63c-.16-.66-.96-1-1.82-.78-.87.22-1.45.91-1.28,1.55.38,1.53,5.98-1.19,6.96,2.75.54,2.08-1.01,4.28-3.44,4.88-2.46.62-4.91-.66-5.45-2.86Z"/>
+          <path class="cls-3" d="M240.31,335.44c.72,2.18-.48,4.55-2.64,5.26l-2.15.71.97,2.98-2.49.82-3.57-10.91,4.58-1.5c2.2-.72,4.59.47,5.3,2.65ZM237.72,336.28c-.32-.98-1.14-1.44-1.88-1.2l-2.17.71,1.08,3.29,2.17-.71c.73-.24,1.12-1.11.8-2.09Z"/>
+          <path class="cls-3" d="M252.66,336.85l.54,1.36-2.07.82-1.68-1.93-.55.58-3.14,1.24-.79-.04.12,2.55-2.07.82-.55-1.35-.15-10.73,3.01-1.2,7.31,7.89ZM247.95,335.39l-3.32-3.86.27,5.07,3.05-1.22Z"/>
+          <path class="cls-3" d="M262.83,331.94l.64,1.31-1.93.94-3.39-1.83-1.89.92,1.37,2.82-2.36,1.15-5.02-10.32,4.33-2.11c2.08-1.01,4.61-.16,5.61,1.9.64,1.31.53,2.8-.18,3.99l2.81,1.24ZM255.19,331.07l2.05-.99c.69-.34.96-1.25.51-2.18-.45-.93-1.33-1.27-2.02-.93l-2.05,1,1.51,3.11Z"/>
+          <path class="cls-3" d="M273.87,325.61l.73,1.26-1.93,1.12-1.94-1.67-.46.65-2.92,1.7-.79.08.49,2.51-1.93,1.12-.73-1.26-1.7-10.61,2.81-1.63,8.38,6.74ZM268.99,324.86l-3.84-3.34,1,4.99,2.84-1.65Z"/>
+          <path class="cls-3" d="M277.2,313.87l-2.46,2.04,5.02,7.51-2.18,1.46-5.02-7.51-2.83,1.49-1.17-1.76,7.47-4.99,1.17,1.76Z"/>
+          <path class="cls-3" d="M36.33,240.82c2.14-.83,4.58.24,5.39,2.37l.81,2.12,2.92-1.13.94,2.45-10.72,4.12-1.73-4.5c-.83-2.16.23-4.61,2.38-5.43ZM37.31,243.36c-.97.37-1.38,1.22-1.1,1.93l.82,2.13,3.23-1.24-.82-2.13c-.28-.72-1.17-1.06-2.13-.69Z"/>
+          <path class="cls-3" d="M38.5,228.18l1.4-.43.63,2.05-2.34,3.07.62,2.01,3-.92.77,2.51-10.98,3.37-1.42-4.61c-.68-2.21.55-4.58,2.74-5.25,1.39-.43,2.86-.09,3.92.78l1.66-2.59ZM36.47,235.61l-.67-2.18c-.22-.74-1.09-1.14-2.08-.84s-1.46,1.12-1.23,1.86l.67,2.18,3.31-1.02Z"/>
+          <path class="cls-3" d="M33.9,227.63c-3.23.69-6.44-1.38-7.14-4.58-.7-3.18,1.35-6.39,4.56-7.12,3.21-.73,6.42,1.32,7.13,4.54.71,3.23-1.34,6.46-4.56,7.15ZM31.9,218.57c-1.82.42-2.98,2.17-2.59,3.94.39,1.78,2.18,2.9,4.01,2.49,1.83-.4,2.98-2.17,2.59-3.96-.4-1.79-2.18-2.89-4.01-2.48Z"/>
+          <path class="cls-3" d="M30.99,214.1c-3.27.46-6.29-1.86-6.74-5.15-.3-2.2.65-4.28,2.28-5.54l1.76.67.17,1.25c-1.17.66-1.85,1.9-1.66,3.27.25,1.86,1.94,3.11,3.83,2.86,1.89-.25,3.18-1.92,2.94-3.77-.19-1.37-1.2-2.39-2.47-2.71l-.17-1.25,1.52-1.11c1.91.78,3.37,2.54,3.67,4.73.44,3.29-1.86,6.33-5.13,6.75Z"/>
+          <path class="cls-3" d="M23.6,201.04l-.46-8.02,2.44-.14.31,5.4,2.05-.12.15-3.17,1.82-.11.51,3.13,2.06-.12-.31-5.4,2.44-.14.47,8.02-11.49.67Z"/>
+          <path class="cls-3" d="M30.73,191.38v-2.63c.88.02,1.59-.87,1.6-1.97,0-1.05-.62-1.91-1.37-1.9-1.59-.01-.45,6.05-4.39,6.04-2.04,0-3.69-1.92-3.68-4.25,0-2.28,1.67-4.15,3.71-4.14v2.59c-.69,0-1.21.68-1.21,1.57,0,.9.52,1.63,1.19,1.63,1.58,0,.32-6.11,4.39-6.07,2.15,0,3.9,2.03,3.89,4.55,0,2.54-1.86,4.61-4.12,4.58Z"/>
+          <path class="cls-3" d="M28.1,170.73c2.29.18,4.03,2.19,3.86,4.47l-.17,2.26,3.13.24-.2,2.62-11.47-.89.37-4.81c.18-2.31,2.19-4.07,4.49-3.89ZM27.89,173.45c-1.03-.08-1.77.51-1.83,1.28l-.18,2.28,3.45.26.18-2.27c.06-.77-.6-1.47-1.63-1.55Z"/>
+          <path class="cls-3" d="M35.46,160.44l1.45.2-.32,2.21-2.51.49.22.76-.48,3.34-.43.67,2.27,1.17-.31,2.21-1.45-.21-9.38-5.24.46-3.22,10.47-2.39ZM31.85,163.81l-4.99.94,4.53,2.3.47-3.25Z"/>
+          <path class="cls-3" d="M37.75,149.95l1.43.31-.46,2.1-3.55,1.52-.45,2.06,3.07.67-.57,2.57-11.23-2.47,1.04-4.72c.5-2.26,2.73-3.72,4.98-3.23,1.43.32,2.53,1.33,3.02,2.62l2.72-1.43ZM32.32,155.41l.49-2.23c.16-.75-.39-1.53-1.39-1.75-1.01-.22-1.82.25-1.99,1.01l-.49,2.23,3.38.74Z"/>
+          <path class="cls-3" d="M41.19,138.24l1.4.42-.64,2.13-2.55.11.11.79-.97,3.24-.52.6,2.07,1.5-.64,2.14-1.4-.42-8.5-6.58.94-3.11,10.71-.81ZM37.11,141.02l-5.08.19,4.13,2.95.95-3.14Z"/>
+          <path class="cls-3" d="M36.87,127.19l-.79,3.09,8.47,3.14-.91,2.46-8.47-3.13-1.41,2.87-1.98-.74,3.11-8.42,1.98.74Z"/>
+          <!-- Originale 4 gridcirkler — uændrede -->
+          <circle class="cls-1" cx="187.63" cy="187.63" r="15.84"/>
+          <circle class="cls-1" cx="187.63" cy="187.63" r="45.5"/>
+          <circle class="cls-1" cx="187.63" cy="187.63" r="74.17"/>
+          <circle class="cls-1" cx="187.63" cy="187.63" r="104.36"/>
+        </g>
+      </g>
+
+      <!-- Aksekryds (tilføjet til radar-visualisering) -->
+      <line class="radar-axis" x1="187.63" y1="83.27" x2="187.63" y2="291.99"/>
+      <line class="radar-axis" x1="83.27" y1="187.63" x2="291.99" y2="187.63"/>
+
+      <!-- Dynamiske radar-polygoner injiceres her af JS -->
+      <g id="radarLayer"></g>
+    </svg>
+
+  </div>
+</div>
+
+<script>
+const CX = 187.63, CY = 187.63;
+const NS = 'http://www.w3.org/2000/svg';
+
+// Scorer kortlægges til de præcise ring-radier i SVG'en
+// Score 25 = inderkant af den blå label-ring (~r=130)
+const SCORE_MAP = [
+  [0,   0],
+  [5,   15.84],
+  [10,  45.5],
+  [15,  74.17],
+  [20,  104.36],
+  [25,  130],
+];
+
+function scoreToRadius(score) {
+  const s = Math.max(0, Math.min(25, score));
+  for (let i = 1; i < SCORE_MAP.length; i++) {
+    const [s0, r0] = SCORE_MAP[i-1];
+    const [s1, r1] = SCORE_MAP[i];
+    if (s <= s1) {
+      const t = (s - s0) / (s1 - s0);
+      return r0 + t * (r1 - r0);
+    }
+  }
+  return SCORE_MAP[SCORE_MAP.length - 1][1];
+}
+
+const defaultData = [
+  [18, 14, 16, 20],
+  [20, 17, 12, 15],
+  [15, 19, 18, 22],
+  [22, 11, 20, 18],
+];
+
+let respondentCount = 0;
+
+function addRespondent(vals = [null, null, null, null]) {
+  respondentCount++;
+  const tbody = document.getElementById('respBody');
+  const tr = document.createElement('tr');
+  tr.dataset.id = respondentCount;
+
+  const label = document.createElement('td');
+  label.className = 'resp-label';
+  label.textContent = respondentCount;
+  tr.appendChild(label);
+
+  ['top','right','bottom','left'].forEach((axis, i) => {
+    const td = document.createElement('td');
+    const inp = document.createElement('input');
+    inp.type = 'number';
+    inp.min = 0; inp.max = 25; inp.step = 1;
+    inp.className = 'score-input';
+    inp.dataset.axis = axis;
+    if (vals[i] !== null) inp.value = vals[i];
+    inp.addEventListener('input', renderChart);
+    td.appendChild(inp);
+    tr.appendChild(td);
+  });
+
+  const tdRemove = document.createElement('td');
+  const btn = document.createElement('button');
+  btn.className = 'remove-btn';
+  btn.innerHTML = '×';
+  btn.onclick = () => { tr.remove(); renderChart(); };
+  tdRemove.appendChild(btn);
+  tr.appendChild(tdRemove);
+
+  tbody.appendChild(tr);
+  renderChart();
+}
+
+function getScores() {
+  return Array.from(document.querySelectorAll('#respBody tr')).map(tr => {
+    const inp = tr.querySelectorAll('.score-input');
+    return {
+      top:    parseFloat(inp[0].value) || 0,
+      right:  parseFloat(inp[1].value) || 0,
+      bottom: parseFloat(inp[2].value) || 0,
+      left:   parseFloat(inp[3].value) || 0,
+    };
+  });
+}
+
+function pt(score, angleDeg) {
+  const r = scoreToRadius(score);
+  const rad = (angleDeg - 90) * Math.PI / 180;
+  return { x: CX + r * Math.cos(rad), y: CY + r * Math.sin(rad) };
+}
+
+function makePoints(s) {
+  return [pt(s.top,0), pt(s.right,90), pt(s.bottom,180), pt(s.left,270)]
+    .map(p => `${p.x.toFixed(2)},${p.y.toFixed(2)}`).join(' ');
+}
+
+function renderChart() {
+  const layer = document.getElementById('radarLayer');
+  layer.innerHTML = '';
+  const scores = getScores();
+  if (!scores.length) { updateAvg(null); return; }
+
+  scores.forEach(s => {
+    const poly = document.createElementNS(NS, 'polygon');
+    poly.setAttribute('points', makePoints(s));
+    poly.setAttribute('class', 'radar-individual');
+    layer.appendChild(poly);
+  });
+
+  const avg = {
+    top:    scores.reduce((a,s) => a+s.top,    0) / scores.length,
+    right:  scores.reduce((a,s) => a+s.right,  0) / scores.length,
+    bottom: scores.reduce((a,s) => a+s.bottom, 0) / scores.length,
+    left:   scores.reduce((a,s) => a+s.left,   0) / scores.length,
+  };
+
+  const avgPoly = document.createElementNS(NS, 'polygon');
+  avgPoly.setAttribute('points', makePoints(avg));
+  avgPoly.setAttribute('class', 'radar-average');
+  layer.appendChild(avgPoly);
+
+  [pt(avg.top,0), pt(avg.right,90), pt(avg.bottom,180), pt(avg.left,270)].forEach(p => {
+    const c = document.createElementNS(NS, 'circle');
+    c.setAttribute('cx', p.x.toFixed(2));
+    c.setAttribute('cy', p.y.toFixed(2));
+    c.setAttribute('r', '2.5');
+    c.setAttribute('class', 'radar-dot');
+    layer.appendChild(c);
+  });
+
+  updateAvg(avg);
+}
+
+function updateAvg(avg) {
+  document.getElementById('avg-top').textContent    = avg ? avg.top.toFixed(1)    : '—';
+  document.getElementById('avg-right').textContent  = avg ? avg.right.toFixed(1)  : '—';
+  document.getElementById('avg-bottom').textContent = avg ? avg.bottom.toFixed(1) : '—';
+  document.getElementById('avg-left').textContent   = avg ? avg.left.toFixed(1)   : '—';
+}
+
+function downloadPNG() {
+  const svg = document.getElementById('spiderweb');
+  const scale = 3;
+  const svgData = new XMLSerializer().serializeToString(svg);
+  const blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const canvas = document.createElement('canvas');
+  canvas.width  = Math.round(375.26 * scale);
+  canvas.height = Math.round(375.26 * scale);
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  const img = new Image();
+  img.onload = () => {
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    URL.revokeObjectURL(url);
+    const a = document.createElement('a');
+    a.download = 'esg-spiderweb.png';
+    a.href = canvas.toDataURL('image/png');
+    a.click();
+  };
+  img.src = url;
+}
+
+defaultData.forEach(d => addRespondent(d));
+</script>
+</body>
+</html>
