@@ -109,31 +109,12 @@
     margin: 0 auto;
   }
   .score-input:focus { outline: none; border-color: var(--blue); background: var(--blue-light); }
+  .score-avg { background: #f4f5fb; color: var(--muted); border-color: #eaecf5; cursor: default; }
+  .score-avg:focus { border-color: #eaecf5; background: #f4f5fb; }
   .score-input::-webkit-inner-spin-button,
   .score-input::-webkit-outer-spin-button { -webkit-appearance: none; }
 
-  .remove-btn {
-    background: none; border: none; cursor: pointer;
-    color: var(--blue-mid); font-size: 16px; line-height: 1;
-    padding: 4px 6px; border-radius: 4px;
-  }
-  .remove-btn:hover { color: #e54040; background: #fef2f2; }
-
-  .add-btn {
-    width: 100%; margin-top: 14px; padding: 9px 16px;
-    background: var(--blue-light); color: var(--blue);
-    border: 1.5px dashed var(--blue-mid); border-radius: var(--radius);
-    font-family: 'CZSans', system-ui, sans-serif;
-    font-size: 12px; font-weight: 700; letter-spacing: .04em; cursor: pointer;
-  }
-  .add-btn:hover { background: var(--blue-mid); }
-
   .divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
-
-  .avg-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 20px; }
-  .avg-card { background: var(--blue-light); border-radius: 8px; padding: 8px 4px; text-align: center; }
-  .avg-card-label { font-size: 9px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--blue); line-height: 1.3; margin-bottom: 4px; }
-  .avg-card-value { font-size: 18px; font-weight: 700; color: var(--blue); }
 
   .download-btn {
     width: 100%; padding: 11px 16px;
@@ -147,27 +128,14 @@
   .chart-wrap { aspect-ratio: 1; width: 100%; max-width: 560px; margin: 0 auto; }
   #spiderweb { width: 100%; height: 100%; overflow: visible; }
 
-  /* Radar styles */
-  .radar-individual {
-    fill: none;
-    stroke: #314ae2;
-    stroke-width: 0.55;
-    stroke-linejoin: round;
-    stroke-opacity: 0.35;
+  .slice-btns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
   }
-  .radar-average {
-    fill: #314ae2;
-    fill-opacity: 0.14;
-    stroke: #314ae2;
-    stroke-width: 1.5;
-    stroke-linejoin: round;
-  }
-  .radar-dot { fill: #314ae2; }
-  .radar-axis {
-    stroke: #314ae2;
-    stroke-width: 0.3;
-    stroke-dasharray: 2 2;
-    stroke-opacity: 0.3;
+  .slice-btn {
+    font-size: 11px;
+    padding: 9px 8px;
   }
 </style>
 </head>
@@ -176,31 +144,53 @@
 
   <!-- VENSTRE: KONTROLLER -->
   <div class="panel">
-    <div class="panel-title">Deltagere</div>
-    <table class="resp-table" id="respTable">
+    <div class="panel-title">Scoreinterval</div>
+    <table class="resp-table">
       <thead>
         <tr>
-          <th></th>
-          <th>ESG</th>
-          <th>Kom.</th>
-          <th>Org.</th>
-          <th>Proc.</th>
-          <th></th>
+          <th style="text-align:left">Dimension</th>
+          <th style="color:#e23131">Min</th>
+          <th style="color:#2db36b">Max</th>
+          <th style="color:#314ae2">Avg</th>
         </tr>
       </thead>
-      <tbody id="respBody"></tbody>
+      <tbody>
+        <tr>
+          <td class="resp-label">ESG Parat</td>
+          <td><input type="number" class="score-input" id="min-top"    min="0" max="25" value="5"></td>
+          <td><input type="number" class="score-input" id="max-top"    min="0" max="25" value="20"></td>
+          <td><input type="number" class="score-input score-avg" id="avg-top"    readonly></td>
+        </tr>
+        <tr>
+          <td class="resp-label">Kommunikation</td>
+          <td><input type="number" class="score-input" id="min-right"  min="0" max="25" value="5"></td>
+          <td><input type="number" class="score-input" id="max-right"  min="0" max="25" value="20"></td>
+          <td><input type="number" class="score-input score-avg" id="avg-right"  readonly></td>
+        </tr>
+        <tr>
+          <td class="resp-label">Organisation</td>
+          <td><input type="number" class="score-input" id="min-bottom" min="0" max="25" value="5"></td>
+          <td><input type="number" class="score-input" id="max-bottom" min="0" max="25" value="20"></td>
+          <td><input type="number" class="score-input score-avg" id="avg-bottom" readonly></td>
+        </tr>
+        <tr>
+          <td class="resp-label">Proces</td>
+          <td><input type="number" class="score-input" id="min-left"   min="0" max="25" value="5"></td>
+          <td><input type="number" class="score-input" id="max-left"   min="0" max="25" value="20"></td>
+          <td><input type="number" class="score-input score-avg" id="avg-left"   readonly></td>
+        </tr>
+      </tbody>
     </table>
-    <button class="add-btn" onclick="addRespondent()">+ Tilføj deltager</button>
 
     <hr class="divider">
-    <div class="panel-title" style="margin-bottom:12px">Gennemsnit</div>
-    <div class="avg-row">
-      <div class="avg-card"><div class="avg-card-label">ESG<br>Parat</div><div class="avg-card-value" id="avg-top">—</div></div>
-      <div class="avg-card"><div class="avg-card-label">Komm.<br>parat</div><div class="avg-card-value" id="avg-right">—</div></div>
-      <div class="avg-card"><div class="avg-card-label">Org.<br>parat</div><div class="avg-card-value" id="avg-bottom">—</div></div>
-      <div class="avg-card"><div class="avg-card-label">Proces<br>parat</div><div class="avg-card-value" id="avg-left">—</div></div>
+
+    <button class="download-btn" onclick="downloadPNG()" style="margin-bottom:10px">↓ Download fuld PNG</button>
+    <div class="slice-btns">
+      <button class="download-btn slice-btn" onclick="downloadSlicePNG('top')">↓ ESG Parat</button>
+      <button class="download-btn slice-btn" onclick="downloadSlicePNG('right')">↓ Kommunikation</button>
+      <button class="download-btn slice-btn" onclick="downloadSlicePNG('bottom')">↓ Organisation</button>
+      <button class="download-btn slice-btn" onclick="downloadSlicePNG('left')">↓ Proces</button>
     </div>
-    <button class="download-btn" onclick="downloadPNG()">↓ Download som PNG</button>
   </div>
 
   <!-- HØJRE: DIAGRAM -->
@@ -216,11 +206,24 @@
           .cls-1 { fill: none; stroke: #314ae2; stroke-miterlimit: 10; stroke-width: .4px; }
           .cls-2 { fill: #fff; }
           .cls-3 { fill: #314ae2; }
-          .radar-individual { fill: none; stroke: #314ae2; stroke-width: 0.55; stroke-linejoin: round; stroke-opacity: 0.35; }
-          .radar-average { fill: #314ae2; fill-opacity: 0.14; stroke: #314ae2; stroke-width: 1.5; stroke-linejoin: round; }
-          .radar-dot { fill: #314ae2; }
-          .radar-axis { stroke: #314ae2; stroke-width: 0.3; stroke-dasharray: 2 2; stroke-opacity: 0.3; }
+          .radar-min { fill: none; stroke: #e23131; stroke-width: 2.5; stroke-linecap: butt; }
+          .radar-avg { fill: none; stroke: #314ae2; stroke-width: 2.5; stroke-linecap: butt; }
+          .radar-max { fill: none; stroke: #2db36b; stroke-width: 2.5; stroke-linecap: butt; }
+          .divider { fill: none; stroke: #314ae2; stroke-width: 1.8px; }
         </style>
+        <!-- ClipPath per dimension: hård-klipper buer til ±43° rundt om aksen -->
+        <clipPath id="clip-top">
+          <path d="M 187.63 187.63 L 51.23 41.35 A 200 200 0 0 1 324.03 41.35 Z"/>
+        </clipPath>
+        <clipPath id="clip-right">
+          <path d="M 187.63 187.63 L 333.91 51.23 A 200 200 0 0 1 333.91 324.03 Z"/>
+        </clipPath>
+        <clipPath id="clip-bottom">
+          <path d="M 187.63 187.63 L 324.03 333.91 A 200 200 0 0 1 51.23 333.91 Z"/>
+        </clipPath>
+        <clipPath id="clip-left">
+          <path d="M 187.63 187.63 L 41.35 324.03 A 200 200 0 0 1 41.35 51.23 Z"/>
+        </clipPath>
       </defs>
       <g id="Circles">
         <g>
@@ -288,20 +291,20 @@
           <path class="cls-3" d="M37.75,149.95l1.43.31-.46,2.1-3.55,1.52-.45,2.06,3.07.67-.57,2.57-11.23-2.47,1.04-4.72c.5-2.26,2.73-3.72,4.98-3.23,1.43.32,2.53,1.33,3.02,2.62l2.72-1.43ZM32.32,155.41l.49-2.23c.16-.75-.39-1.53-1.39-1.75-1.01-.22-1.82.25-1.99,1.01l-.49,2.23,3.38.74Z"/>
           <path class="cls-3" d="M41.19,138.24l1.4.42-.64,2.13-2.55.11.11.79-.97,3.24-.52.6,2.07,1.5-.64,2.14-1.4-.42-8.5-6.58.94-3.11,10.71-.81ZM37.11,141.02l-5.08.19,4.13,2.95.95-3.14Z"/>
           <path class="cls-3" d="M36.87,127.19l-.79,3.09,8.47,3.14-.91,2.46-8.47-3.13-1.41,2.87-1.98-.74,3.11-8.42,1.98.74Z"/>
-          <!-- Originale 4 gridcirkler — uændrede -->
-          <circle class="cls-1" cx="187.63" cy="187.63" r="15.84"/>
-          <circle class="cls-1" cx="187.63" cy="187.63" r="45.5"/>
-          <circle class="cls-1" cx="187.63" cy="187.63" r="74.17"/>
-          <circle class="cls-1" cx="187.63" cy="187.63" r="104.36"/>
         </g>
       </g>
 
-      <!-- Aksekryds (tilføjet til radar-visualisering) -->
-      <line class="radar-axis" x1="187.63" y1="83.27" x2="187.63" y2="291.99"/>
-      <line class="radar-axis" x1="83.27" y1="187.63" x2="291.99" y2="187.63"/>
+      <!-- Dynamiske pizza-sektorer — hvert segment klipper til sit eget stykke -->
+      <g id="layer-top"    clip-path="url(#clip-top)"></g>
+      <g id="layer-right"  clip-path="url(#clip-right)"></g>
+      <g id="layer-bottom" clip-path="url(#clip-bottom)"></g>
+      <g id="layer-left"   clip-path="url(#clip-left)"></g>
 
-      <!-- Dynamiske radar-polygoner injiceres her af JS -->
-      <g id="radarLayer"></g>
+      <!-- Skillelinjer forrest -->
+      <line class="divider" x1="187.63" y1="187.63" x2="279.55" y2="95.71"/>
+      <line class="divider" x1="187.63" y1="187.63" x2="279.55" y2="279.55"/>
+      <line class="divider" x1="187.63" y1="187.63" x2="95.71"  y2="279.55"/>
+      <line class="divider" x1="187.63" y1="187.63" x2="95.71"  y2="95.71"/>
     </svg>
 
   </div>
@@ -335,124 +338,72 @@ function scoreToRadius(score) {
   return SCORE_MAP[SCORE_MAP.length - 1][1];
 }
 
-const defaultData = [
-  [18, 14, 16, 20],
-  [20, 17, 12, 15],
-  [15, 19, 18, 22],
-  [22, 11, 20, 18],
-];
-
-let respondentCount = 0;
-
-function addRespondent(vals = [null, null, null, null]) {
-  respondentCount++;
-  const tbody = document.getElementById('respBody');
-  const tr = document.createElement('tr');
-  tr.dataset.id = respondentCount;
-
-  const label = document.createElement('td');
-  label.className = 'resp-label';
-  label.textContent = respondentCount;
-  tr.appendChild(label);
-
-  ['top','right','bottom','left'].forEach((axis, i) => {
-    const td = document.createElement('td');
-    const inp = document.createElement('input');
-    inp.type = 'number';
-    inp.min = 0; inp.max = 25; inp.step = 1;
-    inp.className = 'score-input';
-    inp.dataset.axis = axis;
-    if (vals[i] !== null) inp.value = vals[i];
-    inp.addEventListener('input', () => {
-      if (inp.value !== '' && inp.value !== '-') {
-        let v = parseInt(inp.value, 10);
-        if (isNaN(v)) v = 0;
-        if (v < 0)  { inp.value = 0; }
-        if (v > 25) { inp.value = 25; }
-      }
-      renderChart();
-    });
-    td.appendChild(inp);
-    tr.appendChild(td);
-  });
-
-  const tdRemove = document.createElement('td');
-  const btn = document.createElement('button');
-  btn.className = 'remove-btn';
-  btn.innerHTML = '×';
-  btn.onclick = () => { tr.remove(); renderChart(); };
-  tdRemove.appendChild(btn);
-  tr.appendChild(tdRemove);
-
-  tbody.appendChild(tr);
-  renderChart();
+function getBandScores() {
+  function clamp(v) { const n = parseInt(v, 10); return isNaN(n) ? 0 : Math.max(0, Math.min(25, n)); }
+  function avg(a, b) { return Math.round((a + b) / 2 * 10) / 10; }
+  const dims = ['top', 'right', 'bottom', 'left'];
+  const result = {};
+  for (const d of dims) {
+    const mn = clamp(document.getElementById('min-' + d).value);
+    const mx = clamp(document.getElementById('max-' + d).value);
+    const av = avg(mn, mx);
+    document.getElementById('avg-' + d).value = av;
+    result[d] = { min: mn, avg: av, max: mx };
+  }
+  return result;
 }
 
-function getScores() {
-  return Array.from(document.querySelectorAll('#respBody tr')).map(tr => {
-    const inp = tr.querySelectorAll('.score-input');
-    return {
-      top:    parseFloat(inp[0].value) || 0,
-      right:  parseFloat(inp[1].value) || 0,
-      bottom: parseFloat(inp[2].value) || 0,
-      left:   parseFloat(inp[3].value) || 0,
-    };
-  });
-}
-
-function pt(score, angleDeg) {
+// Enkelt buelinje ved én given score — bruges til min/max-indikation
+function makeArcLine(axisAngleDeg, score) {
   const r = scoreToRadius(score);
-  const rad = (angleDeg - 90) * Math.PI / 180;
-  return { x: CX + r * Math.cos(rad), y: CY + r * Math.sin(rad) };
+  if (r <= 0) return null;
+  const a1 = (axisAngleDeg - 43 - 90) * Math.PI / 180;
+  const a2 = (axisAngleDeg + 43 - 90) * Math.PI / 180;
+  const fmt = n => n.toFixed(3);
+  const x1 = CX + r * Math.cos(a1), y1 = CY + r * Math.sin(a1);
+  const x2 = CX + r * Math.cos(a2), y2 = CY + r * Math.sin(a2);
+  return `M ${fmt(x1)} ${fmt(y1)} A ${fmt(r)} ${fmt(r)} 0 0 1 ${fmt(x2)} ${fmt(y2)}`;
 }
 
-function makePoints(s) {
-  return [pt(s.top,0), pt(s.right,90), pt(s.bottom,180), pt(s.left,270)]
-    .map(p => `${p.x.toFixed(2)},${p.y.toFixed(2)}`).join(' ');
+function makeArcPath(axisAngleDeg, minScore, maxScore) {
+  const rMin = scoreToRadius(Math.min(minScore, maxScore));
+  const rMax = scoreToRadius(Math.max(minScore, maxScore));
+  const a1 = (axisAngleDeg - 43 - 90) * Math.PI / 180;
+  const a2 = (axisAngleDeg + 43 - 90) * Math.PI / 180;
+  const fmt = n => n.toFixed(3);
+  const ox1 = CX + rMax * Math.cos(a1), oy1 = CY + rMax * Math.sin(a1);
+  const ox2 = CX + rMax * Math.cos(a2), oy2 = CY + rMax * Math.sin(a2);
+  const ix1 = CX + rMin * Math.cos(a1), iy1 = CY + rMin * Math.sin(a1);
+  const ix2 = CX + rMin * Math.cos(a2), iy2 = CY + rMin * Math.sin(a2);
+  if (rMin <= 0) {
+    // Fuld pie-sektor fra centrum
+    return `M ${fmt(CX)} ${fmt(CY)} L ${fmt(ox1)} ${fmt(oy1)} A ${fmt(rMax)} ${fmt(rMax)} 0 0 1 ${fmt(ox2)} ${fmt(oy2)} Z`;
+  }
+  // Annular sector: ydre bue CW (sweep=1), linje ind, indre bue CCW (sweep=0), luk
+  return `M ${fmt(ox1)} ${fmt(oy1)} A ${fmt(rMax)} ${fmt(rMax)} 0 0 1 ${fmt(ox2)} ${fmt(oy2)} L ${fmt(ix2)} ${fmt(iy2)} A ${fmt(rMin)} ${fmt(rMin)} 0 0 0 ${fmt(ix1)} ${fmt(iy1)} Z`;
 }
 
-function renderChart() {
-  const layer = document.getElementById('radarLayer');
-  layer.innerHTML = '';
-  const scores = getScores();
-  if (!scores.length) { updateAvg(null); return; }
-
-  scores.forEach(s => {
-    const poly = document.createElementNS(NS, 'polygon');
-    poly.setAttribute('points', makePoints(s));
-    poly.setAttribute('class', 'radar-individual');
-    layer.appendChild(poly);
+function renderBands() {
+  const bands = getBandScores();
+  const dims = [
+    { key: 'top',    axisAngle: 0   },
+    { key: 'right',  axisAngle: 90  },
+    { key: 'bottom', axisAngle: 180 },
+    { key: 'left',   axisAngle: 270 },
+  ];
+  dims.forEach(({ key, axisAngle }) => {
+    const layer = document.getElementById('layer-' + key);
+    layer.innerHTML = '';
+    const { min, avg, max } = bands[key];
+    for (const [score, cls] of [[min, 'radar-min'], [avg, 'radar-avg'], [max, 'radar-max']]) {
+      const d = makeArcLine(axisAngle, score);
+      if (!d) continue;
+      const path = document.createElementNS(NS, 'path');
+      path.setAttribute('d', d);
+      path.setAttribute('class', cls);
+      layer.appendChild(path);
+    }
   });
-
-  const avg = {
-    top:    scores.reduce((a,s) => a+s.top,    0) / scores.length,
-    right:  scores.reduce((a,s) => a+s.right,  0) / scores.length,
-    bottom: scores.reduce((a,s) => a+s.bottom, 0) / scores.length,
-    left:   scores.reduce((a,s) => a+s.left,   0) / scores.length,
-  };
-
-  const avgPoly = document.createElementNS(NS, 'polygon');
-  avgPoly.setAttribute('points', makePoints(avg));
-  avgPoly.setAttribute('class', 'radar-average');
-  layer.appendChild(avgPoly);
-
-  [pt(avg.top,0), pt(avg.right,90), pt(avg.bottom,180), pt(avg.left,270)].forEach(p => {
-    const c = document.createElementNS(NS, 'circle');
-    c.setAttribute('cx', p.x.toFixed(2));
-    c.setAttribute('cy', p.y.toFixed(2));
-    c.setAttribute('r', '2.5');
-    c.setAttribute('class', 'radar-dot');
-    layer.appendChild(c);
-  });
-
-  updateAvg(avg);
-}
-
-function updateAvg(avg) {
-  document.getElementById('avg-top').textContent    = avg ? avg.top.toFixed(1)    : '—';
-  document.getElementById('avg-right').textContent  = avg ? avg.right.toFixed(1)  : '—';
-  document.getElementById('avg-bottom').textContent = avg ? avg.bottom.toFixed(1) : '—';
-  document.getElementById('avg-left').textContent   = avg ? avg.left.toFixed(1)   : '—';
 }
 
 function downloadPNG() {
@@ -479,7 +430,109 @@ function downloadPNG() {
   img.src = url;
 }
 
-defaultData.forEach(d => addRespondent(d));
+// Cirkelcenter og aksvinkel for hvert pizza-slice SVG.
+// Radier er identiske med spiderweb SVG'en (15.84 / 45.5 / 74.17 / 104.36 / 130).
+const SLICE_CONFIG = {
+  top: {
+    file: '/Brand_assets/SVG/ESGPARAT.svg',
+    vw: 294.42, vh: 209.36,
+    cx: 147.21,  cy: 200.86,
+    axisAngle: 0,
+    filename: 'esg-parat.png',
+  },
+  right: {
+    file: '/Brand_assets/SVG/KOMMUNIKATIONSPARAT.svg',
+    vw: 209.35, vh: 294.41,
+    cx: 8.48,    cy: 147.21,
+    axisAngle: 90,
+    filename: 'esg-kommunikation.png',
+  },
+  bottom: {
+    file: '/Brand_assets/SVG/ORAGANISATIONSPARAT.svg',
+    vw: 294.4,  vh: 209.36,
+    cx: 147.2,   cy: 8.48,
+    axisAngle: 180,
+    filename: 'esg-organisation.png',
+  },
+  left: {
+    file: '/Brand_assets/SVG/PROCESPARAT.svg',
+    vw: 209.35, vh: 294.41,
+    cx: 200.87,  cy: 147.21,
+    axisAngle: 270,
+    filename: 'esg-proces.png',
+  },
+};
+
+// Enkelt buelinje ved én given score — brugt i pizza-slice downloads
+function makeArcLineAt(cx, cy, axisAngleDeg, score) {
+  const r = scoreToRadius(score);
+  if (r <= 0) return null;
+  const a1 = (axisAngleDeg - 43 - 90) * Math.PI / 180;
+  const a2 = (axisAngleDeg + 43 - 90) * Math.PI / 180;
+  const fmt = n => n.toFixed(3);
+  const x1 = cx + r * Math.cos(a1), y1 = cy + r * Math.sin(a1);
+  const x2 = cx + r * Math.cos(a2), y2 = cy + r * Math.sin(a2);
+  return `M ${fmt(x1)} ${fmt(y1)} A ${fmt(r)} ${fmt(r)} 0 0 1 ${fmt(x2)} ${fmt(y2)}`;
+}
+
+async function downloadSlicePNG(dim) {
+  const { file, vw, vh, cx, cy, axisAngle, filename } = SLICE_CONFIG[dim];
+  const { min, max } = getBandScores()[dim];
+
+  // Hent pizza-SVG'en fra serveren (avg hentes nedenfor)
+  const resp = await fetch(file);
+  let svgText = await resp.text();
+
+  const { avg } = getBandScores()[dim];
+
+  // Injicer farve-CSS til min/avg/max linjer
+  const extraStyle = `<style>
+    .pb-min{fill:none;stroke:#e23131;stroke-width:2.5;stroke-linecap:round;}
+    .pb-avg{fill:none;stroke:#314ae2;stroke-width:2.5;stroke-linecap:round;}
+    .pb-max{fill:none;stroke:#2db36b;stroke-width:2.5;stroke-linecap:round;}
+  </style>`;
+  svgText = svgText.replace('</defs>', extraStyle + '</defs>');
+
+  // Tre separate buelinjer: min (rød), avg (blå), max (grøn)
+  const linePaths = [[min,'pb-min'],[avg,'pb-avg'],[max,'pb-max']]
+    .map(([s, cls]) => { const d = makeArcLineAt(cx, cy, axisAngle, s); return d ? `<path class="${cls}" d="${d}"/>` : ''; })
+    .join('');
+
+  svgText = svgText.replace('</svg>', linePaths + '</svg>');
+
+  // Render til canvas (3× opløsning)
+  const scale = 3;
+  const W = Math.round(vw * scale);
+  const H = Math.round(vh * scale);
+  const blob = new Blob([svgText], { type: 'image/svg+xml;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const canvas = document.createElement('canvas');
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+  const img = new Image();
+  img.onload = () => {
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, W, H);
+    ctx.drawImage(img, 0, 0, W, H);
+    URL.revokeObjectURL(url);
+    const a = document.createElement('a');
+    a.download = filename;
+    a.href = canvas.toDataURL('image/png');
+    a.click();
+  };
+  img.src = url;
+}
+
+// Input-wiring: live-opdatering ved ændring
+document.querySelectorAll('.score-input').forEach(inp => {
+  inp.addEventListener('input', () => {
+    let v = parseInt(inp.value, 10);
+    if (!isNaN(v)) { if (v < 0) inp.value = 0; if (v > 25) inp.value = 25; }
+    renderBands();
+  });
+});
+
+renderBands();
 </script>
 </body>
 </html>
