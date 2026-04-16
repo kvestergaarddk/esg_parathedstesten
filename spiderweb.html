@@ -52,9 +52,6 @@
     .page {
       grid-template-columns: 1fr;
     }
-    .panel {
-      position: static;
-    }
   }
 
   .panel {
@@ -62,8 +59,13 @@
     border: 1px solid var(--border);
     border-radius: var(--radius);
     padding: 24px;
-    position: sticky;
-    top: 40px;
+  }
+
+  @media (min-width: 721px) {
+    .panel {
+      position: sticky;
+      top: 40px;
+    }
   }
 
   .panel-title {
