@@ -363,7 +363,15 @@ function addRespondent(vals = [null, null, null, null]) {
     inp.className = 'score-input';
     inp.dataset.axis = axis;
     if (vals[i] !== null) inp.value = vals[i];
-    inp.addEventListener('input', renderChart);
+    inp.addEventListener('input', () => {
+      if (inp.value !== '' && inp.value !== '-') {
+        let v = parseInt(inp.value, 10);
+        if (isNaN(v)) v = 0;
+        if (v < 0)  { inp.value = 0; }
+        if (v > 25) { inp.value = 25; }
+      }
+      renderChart();
+    });
     td.appendChild(inp);
     tr.appendChild(td);
   });
