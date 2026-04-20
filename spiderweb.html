@@ -338,7 +338,10 @@ function scoreToRadius(score) {
   return SCORE_MAP[SCORE_MAP.length - 1][1];
 }
 
-function getBandScores(recalcAvg = true) {
+// Dimensioner hvor avg er manuelt sat af brugeren — auto-beregning springes over for disse
+const manualAvg = new Set();
+
+function getBandScores() {
   function clamp(v) { const n = parseInt(v, 10); return isNaN(n) ? 0 : Math.max(0, Math.min(25, n)); }
   function clampF(v) { const n = parseFloat(v); return isNaN(n) ? 0 : Math.max(0, Math.min(25, n)); }
   function autoAvg(a, b) { return Math.round((a + b) / 2 * 10) / 10; }
@@ -348,11 +351,11 @@ function getBandScores(recalcAvg = true) {
     const mn = clamp(document.getElementById('min-' + d).value);
     const mx = clamp(document.getElementById('max-' + d).value);
     let av;
-    if (recalcAvg) {
+    if (manualAvg.has(d)) {
+      av = clampF(document.getElementById('avg-' + d).value);
+    } else {
       av = autoAvg(mn, mx);
       document.getElementById('avg-' + d).value = av;
-    } else {
-      av = clampF(document.getElementById('avg-' + d).value);
     }
     result[d] = { min: mn, avg: av, max: mx };
   }
@@ -389,8 +392,8 @@ function makeArcPath(axisAngleDeg, minScore, maxScore) {
   return `M ${fmt(ox1)} ${fmt(oy1)} A ${fmt(rMax)} ${fmt(rMax)} 0 0 1 ${fmt(ox2)} ${fmt(oy2)} L ${fmt(ix2)} ${fmt(iy2)} A ${fmt(rMin)} ${fmt(rMin)} 0 0 0 ${fmt(ix1)} ${fmt(iy1)} Z`;
 }
 
-function renderBands(recalcAvg = true) {
-  const bands = getBandScores(recalcAvg);
+function renderBands() {
+  const bands = getBandScores();
   const dims = [
     { key: 'top',    axisAngle: 0   },
     { key: 'right',  axisAngle: 90  },
@@ -534,8 +537,10 @@ document.querySelectorAll('.score-input').forEach(inp => {
   inp.addEventListener('input', () => {
     let v = parseFloat(inp.value);
     if (!isNaN(v)) { if (v < 0) inp.value = 0; if (v > 25) inp.value = 25; }
-    const isAvg = inp.id.startsWith('avg-');
-    renderBands(!isAvg);
+    if (inp.id.startsWith('avg-')) {
+      manualAvg.add(inp.id.replace('avg-', ''));
+    }
+    renderBands();
   });
 });
 
