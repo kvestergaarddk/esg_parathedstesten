@@ -184,6 +184,7 @@
 
     <hr class="divider">
 
+    <button class="download-btn" onclick="resetScores()" style="margin-bottom:10px;background:#fff;color:var(--blue);border:1.5px solid var(--border)">↺ Nulstil værdier</button>
     <button class="download-btn" onclick="downloadPNG()" style="margin-bottom:10px">↓ Download fuld PNG</button>
     <div class="slice-btns">
       <button class="download-btn slice-btn" onclick="downloadSlicePNG('top')">↓ ESG Parat</button>
@@ -522,15 +523,46 @@ async function downloadSlicePNG(dim) {
   img.src = url;
 }
 
+const DEFAULTS = {
+  'min-top': 5, 'max-top': 20, 'avg-top': 12.5,
+  'min-right': 5, 'max-right': 20, 'avg-right': 12.5,
+  'min-bottom': 5, 'max-bottom': 20, 'avg-bottom': 12.5,
+  'min-left': 5, 'max-left': 20, 'avg-left': 12.5,
+};
+
+function saveToStorage() {
+  const data = {};
+  Object.keys(DEFAULTS).forEach(id => { data[id] = document.getElementById(id).value; });
+  localStorage.setItem('esg-spiderweb', JSON.stringify(data));
+}
+
+function loadFromStorage() {
+  try {
+    const data = JSON.parse(localStorage.getItem('esg-spiderweb'));
+    if (!data) return;
+    Object.keys(DEFAULTS).forEach(id => {
+      if (data[id] !== undefined) document.getElementById(id).value = data[id];
+    });
+  } catch (e) {}
+}
+
+function resetScores() {
+  Object.keys(DEFAULTS).forEach(id => { document.getElementById(id).value = DEFAULTS[id]; });
+  localStorage.removeItem('esg-spiderweb');
+  renderBands();
+}
+
 // Input-wiring: live-opdatering ved ændring
 document.querySelectorAll('.score-input').forEach(inp => {
   inp.addEventListener('input', () => {
     let v = parseFloat(inp.value);
     if (!isNaN(v)) { if (v < 0) inp.value = 0; if (v > 25) inp.value = 25; }
     renderBands();
+    saveToStorage();
   });
 });
 
+loadFromStorage();
 renderBands();
 </script>
 </body>
