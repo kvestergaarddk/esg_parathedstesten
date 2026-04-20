@@ -137,9 +137,63 @@
     font-size: 11px;
     padding: 9px 8px;
   }
+
+  .dialog-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(26,26,46,.45);
+    backdrop-filter: blur(2px);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+  }
+  .dialog-overlay.open { display: flex; }
+  .dialog-box {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 28px 24px;
+    width: 300px;
+    box-shadow: 0 8px 32px rgba(49,74,226,.12);
+  }
+  .dialog-title {
+    font-size: 14px; font-weight: 700;
+    color: var(--text); margin-bottom: 8px;
+  }
+  .dialog-body {
+    font-size: 13px; color: var(--muted); line-height: 1.5; margin-bottom: 20px;
+  }
+  .dialog-btns { display: flex; gap: 8px; }
+  .dialog-btns button { flex: 1; }
+  .btn-cancel {
+    background: #fff; color: var(--text);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px; font-family: 'CZSans', system-ui, sans-serif;
+    font-size: 13px; font-weight: 700; cursor: pointer;
+  }
+  .btn-cancel:hover { background: #f7f8ff; }
+  .btn-confirm {
+    background: #fe6c7a; color: #fff; border: none;
+    border-radius: var(--radius);
+    padding: 10px; font-family: 'CZSans', system-ui, sans-serif;
+    font-size: 13px; font-weight: 700; cursor: pointer;
+  }
+  .btn-confirm:hover { opacity: .88; }
 </style>
 </head>
 <body>
+<div class="dialog-overlay" id="resetDialog">
+  <div class="dialog-box">
+    <div class="dialog-title">Nulstil værdier</div>
+    <div class="dialog-body">Er du sikker? Alle scoringsværdier sættes tilbage til standard.</div>
+    <div class="dialog-btns">
+      <button class="btn-cancel" onclick="closeResetDialog()">Annullér</button>
+      <button class="btn-confirm" onclick="confirmReset()">Ønsker du at nulstille</button>
+    </div>
+  </div>
+</div>
+
 <div class="page">
 
   <!-- VENSTRE: KONTROLLER -->
@@ -547,10 +601,16 @@ function loadFromStorage() {
 }
 
 function resetScores() {
+  document.getElementById('resetDialog').classList.add('open');
+}
+function closeResetDialog() {
+  document.getElementById('resetDialog').classList.remove('open');
+}
+function confirmReset() {
   Object.keys(DEFAULTS).forEach(id => { document.getElementById(id).value = DEFAULTS[id]; });
   localStorage.removeItem('esg-spiderweb');
   renderBands();
-  alert('Værdierne er nulstillet til standard.');
+  closeResetDialog();
 }
 
 // Input-wiring: live-opdatering ved ændring
