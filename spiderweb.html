@@ -159,25 +159,25 @@
           <td class="resp-label">ESG Parat</td>
           <td><input type="number" class="score-input" id="min-top"    min="0" max="25" value="5"></td>
           <td><input type="number" class="score-input" id="max-top"    min="0" max="25" value="20"></td>
-          <td><input type="number" class="score-input" id="avg-top"    min="0" max="25"></td>
+          <td><input type="number" class="score-input" id="avg-top"    min="0" max="25" value="12.5"></td>
         </tr>
         <tr>
           <td class="resp-label">Kommunikation</td>
           <td><input type="number" class="score-input" id="min-right"  min="0" max="25" value="5"></td>
           <td><input type="number" class="score-input" id="max-right"  min="0" max="25" value="20"></td>
-          <td><input type="number" class="score-input" id="avg-right"  min="0" max="25"></td>
+          <td><input type="number" class="score-input" id="avg-right"  min="0" max="25" value="12.5"></td>
         </tr>
         <tr>
           <td class="resp-label">Organisation</td>
           <td><input type="number" class="score-input" id="min-bottom" min="0" max="25" value="5"></td>
           <td><input type="number" class="score-input" id="max-bottom" min="0" max="25" value="20"></td>
-          <td><input type="number" class="score-input" id="avg-bottom" min="0" max="25"></td>
+          <td><input type="number" class="score-input" id="avg-bottom" min="0" max="25" value="12.5"></td>
         </tr>
         <tr>
           <td class="resp-label">Proces</td>
           <td><input type="number" class="score-input" id="min-left"   min="0" max="25" value="5"></td>
           <td><input type="number" class="score-input" id="max-left"   min="0" max="25" value="20"></td>
-          <td><input type="number" class="score-input" id="avg-left"   min="0" max="25"></td>
+          <td><input type="number" class="score-input" id="avg-left"   min="0" max="25" value="12.5"></td>
         </tr>
       </tbody>
     </table>
@@ -338,25 +338,15 @@ function scoreToRadius(score) {
   return SCORE_MAP[SCORE_MAP.length - 1][1];
 }
 
-// Dimensioner hvor avg er manuelt sat af brugeren — auto-beregning springes over for disse
-const manualAvg = new Set();
-
 function getBandScores() {
   function clamp(v) { const n = parseInt(v, 10); return isNaN(n) ? 0 : Math.max(0, Math.min(25, n)); }
   function clampF(v) { const n = parseFloat(v); return isNaN(n) ? 0 : Math.max(0, Math.min(25, n)); }
-  function autoAvg(a, b) { return Math.round((a + b) / 2 * 10) / 10; }
   const dims = ['top', 'right', 'bottom', 'left'];
   const result = {};
   for (const d of dims) {
     const mn = clamp(document.getElementById('min-' + d).value);
     const mx = clamp(document.getElementById('max-' + d).value);
-    let av;
-    if (manualAvg.has(d)) {
-      av = clampF(document.getElementById('avg-' + d).value);
-    } else {
-      av = autoAvg(mn, mx);
-      document.getElementById('avg-' + d).value = av;
-    }
+    const av = clampF(document.getElementById('avg-' + d).value);
     result[d] = { min: mn, avg: av, max: mx };
   }
   return result;
@@ -537,9 +527,6 @@ document.querySelectorAll('.score-input').forEach(inp => {
   inp.addEventListener('input', () => {
     let v = parseFloat(inp.value);
     if (!isNaN(v)) { if (v < 0) inp.value = 0; if (v > 25) inp.value = 25; }
-    if (inp.id.startsWith('avg-')) {
-      manualAvg.add(inp.id.replace('avg-', ''));
-    }
     renderBands();
   });
 });
