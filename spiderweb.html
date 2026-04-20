@@ -550,6 +550,7 @@ function resetScores() {
   Object.keys(DEFAULTS).forEach(id => { document.getElementById(id).value = DEFAULTS[id]; });
   localStorage.removeItem('esg-spiderweb');
   renderBands();
+  alert('Værdierne er nulstillet til standard.');
 }
 
 // Input-wiring: live-opdatering ved ændring
