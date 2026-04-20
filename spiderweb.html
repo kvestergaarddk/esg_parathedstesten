@@ -151,7 +151,7 @@
           <th style="text-align:left">Dimension</th>
           <th style="color:#fe6c7a">Min</th>
           <th style="color:#2db36b">Max</th>
-          <th style="color:#314ae2">Avg</th>
+          <th style="color:#c9a000">Avg</th>
         </tr>
       </thead>
       <tbody>
@@ -207,7 +207,7 @@
           .cls-2 { fill: #fff; }
           .cls-3 { fill: #314ae2; }
           .radar-min { fill: none; stroke: #fe6c7a; stroke-width: 2.5; stroke-linecap: butt; }
-          .radar-avg { fill: none; stroke: #314ae2; stroke-width: 2.5; stroke-linecap: butt; }
+          .radar-avg { fill: none; stroke: #f5c518; stroke-width: 2; stroke-dasharray: 5 3.5; stroke-linecap: round; }
           .radar-max { fill: none; stroke: #2db36b; stroke-width: 2.5; stroke-linecap: butt; }
           .divider { fill: none; stroke: #314ae2; stroke-width: 1.8px; }
         </style>
@@ -494,28 +494,15 @@ async function downloadSlicePNG(dim) {
   // Injicer farve-CSS til min/avg/max linjer og gul stiplet range-linje
   const extraStyle = `<style>
     .pb-min{fill:none;stroke:#fe6c7a;stroke-width:2.5;stroke-linecap:round;}
-    .pb-avg{fill:none;stroke:#314ae2;stroke-width:2.5;stroke-linecap:round;}
+    .pb-avg{fill:none;stroke:#f5c518;stroke-width:2;stroke-dasharray:5 3.5;stroke-linecap:round;}
     .pb-max{fill:none;stroke:#2db36b;stroke-width:2.5;stroke-linecap:round;}
-    .pb-range{fill:none;stroke:#f5c518;stroke-width:2;stroke-dasharray:5 3.5;stroke-linecap:round;}
   </style>`;
   svgText = svgText.replace('</defs>', extraStyle + '</defs>');
 
-  // Gul stiplet radial linje fra min til max langs aksen
-  let rangePath = '';
-  const rMinV = scoreToRadius(min);
-  const rMaxV = scoreToRadius(max);
-  if (rMaxV > rMinV) {
-    const aRad = (axisAngle - 90) * Math.PI / 180;
-    const fmt = n => n.toFixed(3);
-    const lx1 = cx + rMinV * Math.cos(aRad), ly1 = cy + rMinV * Math.sin(aRad);
-    const lx2 = cx + rMaxV * Math.cos(aRad), ly2 = cy + rMaxV * Math.sin(aRad);
-    rangePath = `<line class="pb-range" x1="${fmt(lx1)}" y1="${fmt(ly1)}" x2="${fmt(lx2)}" y2="${fmt(ly2)}"/>`;
-  }
-
-  // Tre separate buelinjer: min (rød), avg (blå), max (grøn) + gul range
+  // Tre separate buelinjer: min (rød), avg (gul stiplet), max (grøn)
   const linePaths = [[min,'pb-min'],[avg,'pb-avg'],[max,'pb-max']]
     .map(([s, cls]) => { const d = makeArcLineAt(cx, cy, axisAngle, s); return d ? `<path class="${cls}" d="${d}"/>` : ''; })
-    .join('') + rangePath;
+    .join('');
 
   svgText = svgText.replace('</svg>', linePaths + '</svg>');
 
