@@ -191,6 +191,10 @@
         <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M10.5 6A4.5 4.5 0 1 1 6 1.5V3M6 1.5L8 3.5M6 1.5L4 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         Opdater
       </button>
+      <button class="btn-ghost" onclick="downloadCSV()">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v7M3 5.5l3 3 3-3M2 10h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Download CSV
+      </button>
       <button class="btn-ghost" onclick="doLogout()">Log ud</button>
     </div>
   </div>
@@ -280,6 +284,7 @@
 // ═══════════════════════════════════════
 // CONFIG
 // ═══════════════════════════════════════
+let allRows = [];
 const PASSWORD   = 'kamelesgparat2026-czoo';
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxLnfsexWRpVby6A2PheJnPO_FP_v715scFgYepMLg97-PUfVcR_iXnjq270Y2TUySH/exec';
 
@@ -346,7 +351,21 @@ async function loadData() {
 // ═══════════════════════════════════════
 // RENDER
 // ═══════════════════════════════════════
+function downloadCSV() {
+  if (!allRows.length) return;
+  const headers = Object.keys(allRows[0]);
+  const csv = [
+    headers.join(','),
+    ...allRows.map(r => headers.map(h => `"${(r[h] || '').toString().replace(/"/g, '""')}"`).join(','))
+  ].join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' }));
+  a.download = `esg-besvarelser-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+}
+
 function renderDashboard(rows) {
+  allRows = rows;
   // Filter out header row if it slipped through
   const data = rows.filter(r => r['Total'] && !isNaN(+r['Total']));
 
