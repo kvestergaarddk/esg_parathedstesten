@@ -353,46 +353,82 @@ function escHtml(str) {
 // SHEETS — gem data
 // ============================================================
 
+function getExpectedHeaders() {
+  var headers = ['Tidsstempel', 'Navn', 'Email', 'Titel', 'Telefon',
+                 'Samtykke kontakt', 'Nyhedsbrev',
+                 'Total', 'Niveau',
+                 'ESG parat', 'Kommunikationsparat', 'Organisationsparat', 'Procesparat'];
+  var questions = [
+    // Dim 0 — ESG parat
+    'Har I kortlagt virksomhedens væsentligste aftryk (miljø-, klima- og sociale forhold)?',
+    'Har I et ESG-program med konkrete og målbare indsatser baseret på væsentlighed?',
+    "Har I fastlagt mål og KPI'er, så I kan følge jeres udvikling over tid?",
+    'Har I pålidelige ESG-data, som kan dokumenteres og forklares eksternt?',
+    'Udgiver eller kan I udarbejde en ESG-rapport eller -oversigt baseret på anerkendte standarder/rammer?',
+    // Dim 1 — Kommunikationsparat
+    'Er I tilfredse med udbyttet af jeres ESG-kommunikation i dag?',
+    'Har I kortlagt jeres vigtigste målgrupper og deres forskellige behov for indsigt i jeres ESG-arbejde?',
+    'Har I fastlagt, hvad ESG-kommunikation skal bidrage med (fx salg, tillid, employer branding, relationer)?',
+    'Har I udviklet klare storylines eller hovedbudskaber for jeres væsentligste ESG-emner?',
+    'Har I udpeget og trænet relevante talspersoner til at kommunikere om jeres ESG-indsats?',
+    // Dim 2 — Organisationsparat
+    'Har I strukturerede dialoger om, hvordan ESG-arbejdet kan anvendes på tværs af organisationen?',
+    'Har I et fast og velfungerende samarbejde mellem ESG, kommunikation og marketing?',
+    'Har virksomheden en fælles ambition for, hvordan ESG skal bidrage til jeres position i markedet?',
+    'Er relevante funktioner (salg, ledelse, indkøb, marketing, kommunikation) klædt på til at forstå og anvende ESG i dialoger med eksterne?',
+    'Oplever I, at ESG-arbejdet skaber værdi og ejerskab i flere dele af organisationen – og ikke kun i ESG-teamet?',
+    // Dim 3 — Procesparat
+    'Har I klare processer for, hvordan ESG-budskaber og -påstande bliver udviklet og godkendt?',
+    'Er roller og ansvar tydeligt defineret, når der kommunikeres om ESG (hvem ejer indhold, data og godkendelse)?',
+    'Har I overblik over risici og krisepotentiale i jeres væsentligste ESG-emner?',
+    'Har I retningslinjer for, hvad I må og ikke må sige om ESG (fx ift. dokumentation og gennemsigtighed)?',
+    'Har I faste arbejdsgange, der sikrer sammenhæng mellem ESG-data, kommunikation og markedsføring på tværs af kanaler?',
+  ];
+  questions.forEach(function(q) { headers.push(q); });
+  return headers; // 33 kolonner i alt
+}
+
+// Tvangsret header-række til at matche de forventede kolonner.
+// Kalder som: ?action=resetHeaders
+// Skyder IKKE eksisterende datarækker bort — indsætter/overskriver kun række 1.
+function resetHeaders() {
+  var ss    = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName(SHEET_NAME);
+  if (!sheet) sheet = ss.insertSheet(SHEET_NAME);
+
+  var headers = getExpectedHeaders();
+
+  if (sheet.getLastRow() === 0) {
+    sheet.appendRow(headers);
+  } else {
+    // Overskriver række 1 med korrekte headers
+    sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+    // Slet eventuelle ekstra kolonner til højre hvis arket er bredere end forventet
+    var currentCols = sheet.getLastColumn();
+    if (currentCols > headers.length) {
+      sheet.deleteColumns(headers.length + 1, currentCols - headers.length);
+    }
+  }
+}
+
 function saveToSheet(data) {
   try {
     var ss    = SpreadsheetApp.getActiveSpreadsheet();
     var sheet = ss.getSheetByName(SHEET_NAME);
     if (!sheet) sheet = ss.insertSheet(SHEET_NAME);
 
-    // Opret header-række hvis arket er tomt
-    if (sheet.getLastRow() === 0) {
-      var headers = ['Tidsstempel', 'Navn', 'Email', 'Titel', 'Telefon',
-                     'Samtykke kontakt', 'Nyhedsbrev',
-                     'Total', 'Niveau',
-                     'ESG parat', 'Kommunikationsparat', 'Organisationsparat', 'Procesparat'];
-      var questions = [
-        // Dim 0 — ESG parat
-        'Har I kortlagt virksomhedens væsentligste aftryk (miljø-, klima- og sociale forhold)?',
-        'Har I et ESG-program med konkrete og målbare indsatser baseret på væsentlighed?',
-        "Har I fastlagt mål og KPI'er, så I kan følge jeres udvikling over tid?",
-        'Har I pålidelige ESG-data, som kan dokumenteres og forklares eksternt?',
-        'Udgiver eller kan I udarbejde en ESG-rapport eller -oversigt baseret på anerkendte standarder/rammer?',
-        // Dim 1 — Kommunikationsparat
-        'Er I tilfredse med udbyttet af jeres ESG-kommunikation i dag?',
-        'Har I kortlagt jeres vigtigste målgrupper og deres forskellige behov for indsigt i jeres ESG-arbejde?',
-        'Har I fastlagt, hvad ESG-kommunikation skal bidrage med (fx salg, tillid, employer branding, relationer)?',
-        'Har I udviklet klare storylines eller hovedbudskaber for jeres væsentligste ESG-emner?',
-        'Har I udpeget og trænet relevante talspersoner til at kommunikere om jeres ESG-indsats?',
-        // Dim 2 — Organisationsparat
-        'Har I strukturerede dialoger om, hvordan ESG-arbejdet kan anvendes på tværs af organisationen?',
-        'Har I et fast og velfungerende samarbejde mellem ESG, kommunikation og marketing?',
-        'Har virksomheden en fælles ambition for, hvordan ESG skal bidrage til jeres position i markedet?',
-        'Er relevante funktioner (salg, ledelse, indkøb, marketing, kommunikation) klædt på til at forstå og anvende ESG i dialoger med eksterne?',
-        'Oplever I, at ESG-arbejdet skaber værdi og ejerskab i flere dele af organisationen – og ikke kun i ESG-teamet?',
-        // Dim 3 — Procesparat
-        'Har I klare processer for, hvordan ESG-budskaber og -påstande bliver udviklet og godkendt?',
-        'Er roller og ansvar tydeligt defineret, når der kommunikeres om ESG (hvem ejer indhold, data og godkendelse)?',
-        'Har I overblik over risici og krisepotentiale i jeres væsentligste ESG-emner?',
-        'Har I retningslinjer for, hvad I må og ikke må sige om ESG (fx ift. dokumentation og gennemsigtighed)?',
-        'Har I faste arbejdsgange, der sikrer sammenhæng mellem ESG-data, kommunikation og markedsføring på tværs af kanaler?',
-      ];
-      questions.forEach(function(q) { headers.push(q); });
-      sheet.appendRow(headers);
+    // Opret header-række hvis arket er tomt, eller header-kolonneantal er forkert
+    var expectedHeaders = getExpectedHeaders();
+    var needsHeader = sheet.getLastRow() === 0 ||
+                      sheet.getLastColumn() !== expectedHeaders.length ||
+                      sheet.getRange(1, 1).getValue() !== 'Tidsstempel';
+    if (needsHeader) {
+      if (sheet.getLastRow() === 0) {
+        sheet.appendRow(expectedHeaders);
+      } else {
+        sheet.insertRowBefore(1);
+        sheet.getRange(1, 1, 1, expectedHeaders.length).setValues([expectedHeaders]);
+      }
     }
 
     var row = [
@@ -480,6 +516,14 @@ function doGet(e) {
     var rows = getAllData();
     return ContentService
       .createTextOutput(JSON.stringify({ status: 'ok', rows: rows }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
+  // Ret header-rækken i Google Sheet (kald én gang for at fikse CSV-mismatch)
+  if (params.action === 'resetHeaders') {
+    resetHeaders();
+    return ContentService
+      .createTextOutput(JSON.stringify({ status: 'ok', message: 'Headers opdateret' }))
       .setMimeType(ContentService.MimeType.JSON);
   }
 

@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ESG Parathedstesten — Dashboard</title>
 <script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -191,9 +192,9 @@
         <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M10.5 6A4.5 4.5 0 1 1 6 1.5V3M6 1.5L8 3.5M6 1.5L4 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         Opdater
       </button>
-      <button class="btn-ghost" onclick="downloadCSV()">
+      <button class="btn-ghost" onclick="downloadExcel()">
         <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v7M3 5.5l3 3 3-3M2 10h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        Download CSV
+        Download Excel
       </button>
       <button class="btn-ghost" onclick="doLogout()">Log ud</button>
     </div>
@@ -351,17 +352,56 @@ async function loadData() {
 // ═══════════════════════════════════════
 // RENDER
 // ═══════════════════════════════════════
-function downloadCSV() {
+function downloadExcel() {
   if (!allRows.length) return;
-  const headers = Object.keys(allRows[0]);
-  const csv = [
-    headers.join(','),
-    ...allRows.map(r => headers.map(h => `"${(r[h] || '').toString().replace(/"/g, '""')}"`).join(','))
-  ].join('\n');
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' }));
-  a.download = `esg-besvarelser-${new Date().toISOString().slice(0, 10)}.csv`;
-  a.click();
+
+  const metaHeaders = [
+    'Tidsstempel','Navn','Email','Titel','Telefon',
+    'Samtykke kontakt','Nyhedsbrev','Total','Niveau',
+    'ESG parat','Kommunikationsparat','Organisationsparat','Procesparat',
+  ];
+  const questionHeaders = [
+    'Har I kortlagt virksomhedens væsentligste aftryk (miljø-, klima- og sociale forhold)?',
+    'Har I et ESG-program med konkrete og målbare indsatser baseret på væsentlighed?',
+    "Har I fastlagt mål og KPI'er, så I kan følge jeres udvikling over tid?",
+    'Har I pålidelige ESG-data, som kan dokumenteres og forklares eksternt?',
+    'Udgiver eller kan I udarbejde en ESG-rapport eller -oversigt baseret på anerkendte standarder/rammer?',
+    'Er I tilfredse med udbyttet af jeres ESG-kommunikation i dag?',
+    'Har I kortlagt jeres vigtigste målgrupper og deres forskellige behov for indsigt i jeres ESG-arbejde?',
+    'Har I fastlagt, hvad ESG-kommunikation skal bidrage med (fx salg, tillid, employer branding, relationer)?',
+    'Har I udviklet klare storylines eller hovedbudskaber for jeres væsentligste ESG-emner?',
+    'Har I udpeget og trænet relevante talspersoner til at kommunikere om jeres ESG-indsats?',
+    'Har I strukturerede dialoger om, hvordan ESG-arbejdet kan anvendes på tværs af organisationen?',
+    'Har I et fast og velfungerende samarbejde mellem ESG, kommunikation og marketing?',
+    'Har virksomheden en fælles ambition for, hvordan ESG skal bidrage til jeres position i markedet?',
+    'Er relevante funktioner (salg, ledelse, indkøb, marketing, kommunikation) klædt på til at forstå og anvende ESG i dialoger med eksterne?',
+    'Oplever I, at ESG-arbejdet skaber værdi og ejerskab i flere dele af organisationen – og ikke kun i ESG-teamet?',
+    'Har I klare processer for, hvordan ESG-budskaber og -påstande bliver udviklet og godkendt?',
+    'Er roller og ansvar tydeligt defineret, når der kommunikeres om ESG (hvem ejer indhold, data og godkendelse)?',
+    'Har I overblik over risici og krisepotentiale i jeres væsentligste ESG-emner?',
+    'Har I retningslinjer for, hvad I må og ikke må sige om ESG (fx ift. dokumentation og gennemsigtighed)?',
+    'Har I faste arbejdsgange, der sikrer sammenhæng mellem ESG-data, kommunikation og markedsføring på tværs af kanaler?',
+  ];
+  const allHeaders = [...metaHeaders, ...questionHeaders];
+
+  const sheetData = [
+    allHeaders,
+    ...allRows.map(r => allHeaders.map(h => r[h] ?? '')),
+  ];
+
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.aoa_to_sheet(sheetData);
+
+  ws['!cols'] = [
+    {wch:22},{wch:22},{wch:28},{wch:18},{wch:14},
+    {wch:16},{wch:12},{wch:8},{wch:14},
+    {wch:13},{wch:18},{wch:16},{wch:13},
+    ...Array(20).fill({wch:50}),
+  ];
+  ws['!freeze'] = { xSplit: 0, ySplit: 1 };
+
+  XLSX.utils.book_append_sheet(wb, ws, 'Besvarelser');
+  XLSX.writeFile(wb, `esg-besvarelser-${new Date().toISOString().slice(0, 10)}.xlsx`);
 }
 
 function renderDashboard(rows) {
