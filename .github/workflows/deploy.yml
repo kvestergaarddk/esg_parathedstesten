@@ -36,5 +36,7 @@ jobs:
             open ftp://$FTP_SERVER;
             user $FTP_USERNAME $FTP_PASSWORD;
             mirror -R ./dist/ /public_html/;
+            rm -f /public_html/dashboard.html;
+            rm -f /public_html/spiderweb.html;
             bye
           " || true
