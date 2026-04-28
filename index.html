@@ -143,6 +143,14 @@
     .opt-label { font-family: 'CZ Sans', sans-serif; font-size: 16px; color: rgba(255,255,255,0.55); transition: color 0.15s; }
     .opt.sel .opt-label { color: #1B1B1C; font-weight: 500; }
 
+    .opt-dontknow { margin-top: 4px; }
+    .opt-dontknow .opt-label { font-size: 14px; color: rgba(255,255,255,0.3); }
+    .opt-dontknow .opt-num { color: rgba(255,255,255,0.18); font-size: 12px; }
+    @media (hover: hover) and (pointer: fine) { .opt-dontknow:hover .opt-label { color: rgba(255,255,255,0.5); } }
+    .opt-dontknow.sel { background: rgba(255,255,255,0.08); padding-left: 12px; }
+    .opt-dontknow.sel .opt-label { color: rgba(255,255,255,0.65); font-weight: 500; }
+    .opt-dontknow.sel .opt-num { color: rgba(255,255,255,0.3); }
+
     /* ===== BUTTONS ===== */
     .btn {
       display: inline-flex;
@@ -198,7 +206,7 @@
     .input {
       background: transparent;
       border: none;
-      border-bottom: 1px solid rgba(255,255,255,0.25);
+      border-bottom: 1px solid rgba(255,255,255,0.6);
       border-radius: 0;
       padding: 10px 0;
       color: var(--text);
@@ -208,8 +216,9 @@
       transition: border-color 0.18s;
       width: 100%;
     }
-    .input:focus { border-bottom-color: rgba(255,255,255,0.75); }
-    .input::placeholder { color: var(--muted); opacity: 0.45; }
+    .input:focus { border-bottom-color: rgba(255,255,255,1.0); }
+    .input::placeholder { color: var(--muted); opacity: 0.6; }
+    #l-comment::placeholder { color: var(--muted); opacity: 0.6; }
 
     /* ===== DIM BAR ===== */
     .bar-track { height: 3px; background: var(--border); overflow: hidden; }
@@ -514,12 +523,12 @@
 <div id="view-lead" class="view">
   <div class="wrap-sm" style="min-height: 100vh; display: flex; flex-direction: column; justify-content: center; padding-top: 64px; padding-bottom: 64px;">
 
-    <div style="margin-bottom: 6px; font-family:'CZ Sans',sans-serif; font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.4); font-weight: 400; display: flex; align-items: center; gap: 10px;">
+    <div style="margin-bottom: 6px; font-family:'CZ Sans',sans-serif; font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.6); font-weight: 400; display: flex; align-items: center; gap: 10px;">
       <span style="display: inline-block; width: 20px; height: 1px; background: currentColor;"></span>
       Næsten klar
     </div>
     <h2 style="font-size: clamp(28px, 4vw, 44px); margin-bottom: 16px; line-height: 1.1;">Se jeres ESG-rapport</h2>
-    <p style="color: rgba(239,238,234,0.55); margin-bottom: 44px; font-size: 15px; line-height: 1.75; max-width: 460px;">
+    <p style="color: rgba(239,238,234,0.6); margin-bottom: 44px; font-size: 15px; line-height: 1.75; max-width: 460px;">
       Udfyld dine oplysninger herunder for at se din personlige ESG-modenhedsrapport med score på alle fire dimensioner.
     </p>
 
@@ -557,18 +566,31 @@
       </div>
 
       <!-- GDPR checkboxes -->
-      <div style="display:flex; flex-direction:column; gap:14px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.07); margin-top:4px;">
+      <div style="display:flex; flex-direction:column; gap:14px; padding-top:8px; margin-top:4px;">
         <div>
-          <label id="label-consent" style="display:flex; align-items:flex-start; gap:12px; cursor:pointer; font-family:'CZ Sans',sans-serif; font-size:13px; color:rgba(239,238,234,0.65); line-height:1.6;">
+          <label id="label-consent" style="display:flex; align-items:flex-start; gap:12px; cursor:pointer; font-family:'CZ Sans',sans-serif; font-size:13px; color:rgba(239,238,234,0.6); line-height:1.6;">
             <input type="checkbox" id="l-consent" style="margin-top:2px; width:16px; height:16px; min-width:16px; accent-color:var(--accent); cursor:pointer;" onchange="clearFieldError('consent')">
             <span>Jeg accepterer at Creative ZOO må kontakte mig og opbevare mine kontaktoplysninger i forbindelse med denne rapport. <span style="color:var(--accent)">*</span></span>
           </label>
           <span class="field-error" id="err-consent" style="margin-left:28px;"></span>
         </div>
-        <label style="display:flex; align-items:flex-start; gap:12px; cursor:pointer; font-family:'CZ Sans',sans-serif; font-size:13px; color:rgba(239,238,234,0.65); line-height:1.6;">
+        <label style="display:flex; align-items:flex-start; gap:12px; cursor:pointer; font-family:'CZ Sans',sans-serif; font-size:13px; color:rgba(239,238,234,0.6); line-height:1.6;">
           <input type="checkbox" id="l-newsletter" style="margin-top:2px; width:16px; height:16px; min-width:16px; accent-color:var(--accent); cursor:pointer;">
           <span>Ja tak, jeg vil gerne modtage inspiration og nyheder fra Creative ZOO om ESG og bæredygtighed.</span>
         </label>
+      </div>
+
+      <!-- Kommentarfelt (valgfrit) -->
+      <div style="padding-top: 4px;">
+        <button type="button" id="comment-toggle" onclick="toggleComment()" style="background:none; border:none; cursor:pointer; display:inline-flex; align-items:center; gap:8px; color:rgba(255,255,255,0.6); font-family:'CZ Sans',sans-serif; font-size:16px; padding:0; transition:color 0.15s ease;" onmouseover="this.style.color='rgba(255,255,255,1.0)'" onmouseout="this.style.color='rgba(255,255,255,0.6)'">
+          <span id="comment-toggle-icon" style="font-size:16px; line-height:1; transition:transform 0.2s ease;">+</span>
+          <span id="comment-toggle-label">Har du spørgsmål eller noget du gerne vil tilføje?</span>
+        </button>
+        <div id="comment-wrap" style="display:grid; grid-template-rows:0fr; transition:grid-template-rows 0.25s ease; margin-top:0;">
+          <div style="overflow:hidden;">
+            <textarea id="l-comment" placeholder="Skriv dit spørgsmål eller kommentar her…" rows="3" style="margin-top:12px; width:100%; box-sizing:border-box; background:transparent; border:none; border-bottom:1px solid rgba(255,255,255,0.6); font-family:'CZ Sans',sans-serif; font-size:15px; line-height:1.6; padding:8px 0; resize:none; outline:none; color:rgba(239,238,234,1.0);" onfocus="this.style.borderBottomColor='rgba(255,255,255,1.0)'" onblur="this.style.borderBottomColor='rgba(255,255,255,0.6)'"></textarea>
+          </div>
+        </div>
       </div>
 
       <!-- Turnstile widget (invisible) -->
@@ -718,6 +740,7 @@ const LIKERT = [
   { val: 3, label: 'Delvist' },
   { val: 4, label: 'I høj grad' },
   { val: 5, label: 'Fuldt implementeret' },
+  { val: 0, label: 'Ved ikke' },
 ];
 
 // State
@@ -781,12 +804,12 @@ function renderQuestion() {
   opts.innerHTML = '';
   LIKERT.forEach(({ val, label }) => {
     const div = document.createElement('div');
-    div.className = 'opt' + (answers[currentQ] === val ? ' sel' : '');
+    div.className = 'opt' + (val === 0 ? ' opt-dontknow' : '') + (answers[currentQ] === val ? ' sel' : '');
     div.setAttribute('tabindex', '0');
     div.setAttribute('role', 'radio');
     div.setAttribute('aria-checked', answers[currentQ] === val ? 'true' : 'false');
     div.innerHTML = `
-      <div class="opt-num">${val}</div>
+      <div class="opt-num">${val === 0 ? '?' : val}</div>
       <span class="opt-label">${label}</span>`;
     div.onclick = () => selectAnswer(val);
     div.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectAnswer(val); } };
@@ -851,7 +874,7 @@ function prevQuestion() {
 }
 
 // ===== LEAD FORM =====
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxLnfsexWRpVby6A2PheJnPO_FP_v715scFgYepMLg97-PUfVcR_iXnjq270Y2TUySH/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwUkYUod6LFlYgoQOgodI9j2ZMABrNGBXiqqm7YIQXwgh43U4MIRrwUraz1Gqp9DAj8/exec';
 let pendingLeadData = null;
 
 function setFieldError(id, msg) {
@@ -908,6 +931,15 @@ function validateLeadForm() {
   return ok;
 }
 
+function toggleComment() {
+  const wrap = document.getElementById('comment-wrap');
+  const icon = document.getElementById('comment-toggle-icon');
+  const open = wrap.style.gridTemplateRows === '1fr';
+  wrap.style.gridTemplateRows = open ? '0fr' : '1fr';
+  icon.style.transform = open ? 'rotate(0deg)' : 'rotate(45deg)';
+  if (!open) setTimeout(() => document.getElementById('l-comment').focus(), 260);
+}
+
 function submitLead(e) {
   e.preventDefault();
 
@@ -929,6 +961,7 @@ function submitLead(e) {
     phone:              digits,
     consent_contact:    true,
     consent_newsletter: document.getElementById('l-newsletter').checked,
+    comment:            document.getElementById('l-comment').value.trim(),
   };
 
   leadData = { name: pendingLeadData.name, email: pendingLeadData.email };
@@ -966,6 +999,7 @@ function onTurnstileVerified(token) {
     phone:              dataToSend.phone || '',
     consent_contact:    dataToSend.consent_contact    ? '1' : '0',
     consent_newsletter: dataToSend.consent_newsletter ? '1' : '0',
+    comment:            dataToSend.comment || '',
     total,
     level,
     dim0: dimScores[0],
@@ -974,7 +1008,7 @@ function onTurnstileVerified(token) {
     dim3: dimScores[3],
   });
 
-  answers.forEach((a, i) => params.set('q' + (i + 1), a || ''));
+  answers.forEach((a, i) => params.set('q' + (i + 1), a !== null ? a : ''));
 
   fetch(APPS_SCRIPT_URL + '?' + params.toString())
     .catch(err => console.warn('Sheet sync fejlede:', err));

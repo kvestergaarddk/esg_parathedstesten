@@ -385,7 +385,8 @@ function getExpectedHeaders() {
     'Har I faste arbejdsgange, der sikrer sammenhæng mellem ESG-data, kommunikation og markedsføring på tværs af kanaler?',
   ];
   questions.forEach(function(q) { headers.push(q); });
-  return headers; // 33 kolonner i alt
+  headers.push('Kommentar');
+  return headers; // 34 kolonner i alt
 }
 
 // Tvangsret header-række til at matche de forventede kolonner.
@@ -447,6 +448,7 @@ function saveToSheet(data) {
       data.dim3  || '',
     ];
     for (var i = 1; i <= 20; i++) row.push(data['q' + i] || '');
+    row.push(data.comment || '');
     sheet.appendRow(row);
   } catch (e) {
     Logger.log('Sheet error: ' + e);
