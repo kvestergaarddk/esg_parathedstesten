@@ -246,18 +246,19 @@
         </div>
       </div>
       <div id="table-scroll-wrap" style="overflow-x:auto;">
-        <table style="table-layout:fixed;width:100%;min-width:860px;">
+        <table style="table-layout:fixed;width:100%;min-width:1020px;">
           <colgroup>
-            <col style="width:12%;"><!-- Navn -->
-            <col style="width:12%;"><!-- Titel -->
-            <col style="width:14%;"><!-- Email -->
-            <col style="width:9%;"><!-- Dato -->
-            <col style="width:7%;"><!-- Score -->
-            <col style="width:10%;"><!-- Niveau -->
-            <col style="width:9%;"><!-- ESG parat -->
-            <col style="width:9%;"><!-- Kommunikation -->
-            <col style="width:9%;"><!-- Organisation -->
-            <col style="width:9%;"><!-- Proces -->
+            <col style="width:11%;"><!-- Navn -->
+            <col style="width:11%;"><!-- Titel -->
+            <col style="width:13%;"><!-- Email -->
+            <col style="width:8%;"><!-- Dato -->
+            <col style="width:6%;"><!-- Score -->
+            <col style="width:9%;"><!-- Niveau -->
+            <col style="width:8%;"><!-- ESG parat -->
+            <col style="width:8%;"><!-- Kommunikation -->
+            <col style="width:8%;"><!-- Organisation -->
+            <col style="width:8%;"><!-- Proces -->
+            <col style="width:10%;"><!-- Kommentar -->
           </colgroup>
           <thead>
             <tr>
@@ -271,6 +272,7 @@
               <th style="text-align:center;">Kommunikation</th>
               <th style="text-align:center;">Organisation</th>
               <th style="text-align:center;">Proces</th>
+              <th>Kommentar</th>
             </tr>
           </thead>
           <tbody id="responses-tbody"></tbody>
@@ -287,7 +289,7 @@
 // ═══════════════════════════════════════
 let allRows = [];
 const PASSWORD   = 'kamelesgparat2026-czoo';
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxLnfsexWRpVby6A2PheJnPO_FP_v715scFgYepMLg97-PUfVcR_iXnjq270Y2TUySH/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwUkYUod6LFlYgoQOgodI9j2ZMABrNGBXiqqm7YIQXwgh43U4MIRrwUraz1Gqp9DAj8/exec';
 
 const LEVELS = {
   'Tidlig fase':   { color: '#fe6c7a' },
@@ -500,6 +502,7 @@ function renderDashboard(rows) {
         <td style="text-align:center;color:var(--muted);">${r['Kommunikationsparat'] || '—'}</td>
         <td style="text-align:center;color:var(--muted);">${r['Organisationsparat'] || '—'}</td>
         <td style="text-align:center;color:var(--muted);">${r['Procesparat'] || '—'}</td>
+        <td class="cell-truncate" title="${esc(r['Kommentar'] || '')}" style="color:var(--muted);font-size:13px;">${esc(r['Kommentar']) || ''}</td>
       </tr>`;
   }).join('');
 
