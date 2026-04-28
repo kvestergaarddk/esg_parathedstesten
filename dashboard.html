@@ -382,7 +382,7 @@ function downloadExcel() {
     'Har I retningslinjer for, hvad I må og ikke må sige om ESG (fx ift. dokumentation og gennemsigtighed)?',
     'Har I faste arbejdsgange, der sikrer sammenhæng mellem ESG-data, kommunikation og markedsføring på tværs af kanaler?',
   ];
-  const allHeaders = [...metaHeaders, ...questionHeaders];
+  const allHeaders = [...metaHeaders, ...questionHeaders, 'Kommentar'];
 
   const sheetData = [
     allHeaders,
@@ -397,6 +397,7 @@ function downloadExcel() {
     {wch:16},{wch:12},{wch:8},{wch:14},
     {wch:13},{wch:18},{wch:16},{wch:13},
     ...Array(20).fill({wch:50}),
+    {wch:60},
   ];
   ws['!freeze'] = { xSplit: 0, ySplit: 1 };
 
