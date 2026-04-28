@@ -354,6 +354,12 @@ async function loadData() {
 // ═══════════════════════════════════════
 // RENDER
 // ═══════════════════════════════════════
+function toggleCommentRow(id) {
+  const row = document.getElementById(id);
+  if (!row) return;
+  row.style.display = row.style.display === 'none' ? 'table-row' : 'none';
+}
+
 function downloadExcel() {
   if (!allRows.length) return;
 
@@ -481,11 +487,13 @@ function renderDashboard(rows) {
 
   // ── Tabel ──
   document.getElementById('response-count').textContent = `${n} besvarelse${n !== 1 ? 'r' : ''}`;
-  document.getElementById('responses-tbody').innerHTML = data.map(r => {
-    const lvl   = r['Niveau'] || '—';
-    const col   = LEVELS[lvl]?.color || '#666';
-    const date  = r['Tidsstempel'] ? formatDate(r['Tidsstempel']) : '—';
-    const score = r['Total'] || '—';
+  document.getElementById('responses-tbody').innerHTML = data.map((r, idx) => {
+    const lvl      = r['Niveau'] || '—';
+    const col      = LEVELS[lvl]?.color || '#666';
+    const date     = r['Tidsstempel'] ? formatDate(r['Tidsstempel']) : '—';
+    const score    = r['Total'] || '—';
+    const comment  = r['Kommentar'] || '';
+    const rowId    = `comment-row-${idx}`;
     return `
       <tr>
         <td class="cell-truncate" title="${esc(r['Navn'])}" style="font-weight:500;">${esc(r['Navn']) || '—'}</td>
@@ -502,8 +510,9 @@ function renderDashboard(rows) {
         <td style="text-align:center;color:var(--muted);">${r['Kommunikationsparat'] || '—'}</td>
         <td style="text-align:center;color:var(--muted);">${r['Organisationsparat'] || '—'}</td>
         <td style="text-align:center;color:var(--muted);">${r['Procesparat'] || '—'}</td>
-        <td class="cell-truncate" title="${esc(r['Kommentar'] || '')}" style="color:var(--muted);font-size:13px;">${esc(r['Kommentar']) || ''}</td>
-      </tr>`;
+        <td style="color:var(--muted);font-size:13px;cursor:${comment ? 'pointer' : 'default'};" onclick="${comment ? `toggleCommentRow('${rowId}')` : ''}">${comment ? `<span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;max-width:0;min-width:100%;">${esc(comment)}</span>` : ''}</td>
+      </tr>
+      ${comment ? `<tr id="${rowId}" style="display:none;"><td colspan="11" style="padding:12px 8px 16px;border-top:none;"><div style="background:var(--elevated);border-radius:6px;padding:14px 16px;font-size:14px;color:var(--text);line-height:1.7;">${esc(comment)}</div></td></tr>` : ''}`;
   }).join('');
 
   // Last updated
